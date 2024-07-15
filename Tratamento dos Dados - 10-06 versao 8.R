@@ -303,7 +303,24 @@ indice_classe = indice_classe3
                 pch=16, ylim=c(-4, 20)); abline(h=c(-1,1), col="red", lty="dashed")
 }
 
+# Função para calcular todas as estatísticas para uma coluna
+calcular_estatisticas <- function(x) {
+  c(Média = mean(x),
+    Máximo = max(x),
+    Mediana = median(x),
+    `Desvio Padrão` = sd(x))
+}
 
+# Aplicar a função para cada coluna e armazenar os resultados em um dataframe
+estatisticas <- sapply(dados_RN, calcular_estatisticas)
+
+# Adicionar os nomes das linhas
+rownames(estatisticas) <- c("Média", "Máximo", "Mediana", "Desvio Padrão")
+
+#Resultados das Estatisticas para o Latex
+xtable(estatisticas)
+
+xtable(t(estatisticas))
 
 # Grafico de Dispersao CP  --------------------------------
 
