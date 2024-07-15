@@ -80,6 +80,25 @@ desviopadrao
 desviomil = round(desviopadrao/1000, 2)
 desviomil
 
+# Função para calcular todas as estatísticas para uma coluna
+calcular_estatisticas <- function(x) {
+  c(Média = mean(x),
+    Máximo = max(x),
+    Mediana = median(x),
+    `Desvio Padrão` = sd(x))
+}
+
+# Aplicar a função para cada coluna e armazenar os resultados em um dataframe
+estatisticas <- sapply(dadosnome, calcular_estatisticas)
+
+# Adicionar os nomes das linhas
+rownames(estatisticas) <- c("Média", "Máximo", "Mediana", "Desvio Padrão")
+
+#Resultados das Estatisticas para o Latex
+xtable(estatisticas)
+
+xtable(t(estatisticas))
+
 
 # Metodo Completo com Distancia Euclidiana --------------------------------
 
