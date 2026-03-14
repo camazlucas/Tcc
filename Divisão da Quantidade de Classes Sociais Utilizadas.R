@@ -1,3 +1,6 @@
+library(tidyverse)
+library(caret)
+
 # Definindo a quantidade de Classes Sociais Utilizadas --------------------
 divisao_das_classes = function(x, dados_RN){
 if (x == 6) {
@@ -20,18 +23,13 @@ if (x == 6) {
   particao_6 = createDataPartition(1:nrow(dados_UF_6classes),p=0.7)
   dataset_treino_6 = dados_UF_6classes[particao_6$Resample1,]
   dataset_teste_6 = dados_UF_6classes[- particao_6$Resample1,]
-  
-  
-  indice_classe6 = which(names(dataset_treino_6) == "CLASSE")
-  
 
   treino = dataset_treino_6
   teste = dataset_teste_6
-  indice_classe = indice_classe6
   
 }
   
-if (x == 3) {  
+else if (x == 3) {  
   ## Classificando em Tres Classes ------------------------------------
   
   ### Removendo valor numerico das Classes ------------------------------------
@@ -73,12 +71,20 @@ if (x == 3) {
   particao_3 = createDataPartition(1:nrow(dados_UF_3classes),p=0.7)
   dataset_treino_3 = dados_UF_3classes[particao_3$Resample1,]
   dataset_teste_3 = dados_UF_3classes[- particao_3$Resample1,]
-  
-  indice_classe3 = which(names(dataset_treino_3) == "CLASSE")
 
   treino = dataset_treino_3
   teste = dataset_teste_3
-  indice_classe = indice_classe3
 }
-  return(treino, teste, indice_classe)
+else {
+  stop("Selecione 3 ou 6 classes")
 }
+  
+  return(list(treino = treino, teste = teste))
+
+}
+
+# Selecionar o Número de Classes -----------------------------------------------
+split <- divisao_das_classes(6, dados_o)
+
+treino <- split$treino
+teste  <- split$teste
