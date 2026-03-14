@@ -9,7 +9,7 @@ dados[is.na(dados)] = 0
 
 #Tratamento total dos dados ----------------------------------------------
 
-{
+tratamento_dos_dados = function(dados){
   dados_select = dados[, c(3, 24, 51, 9, 12, 13, 14, 15, 16, 18,  1429, 1437, 1445, 1506, 1538, 1545, 1579, 1582, 1586, 1589, 1592, 1595, 1598, 1601, 1604, 1607, 1610, 1613, 1616, 1619, 1622, 1625, 1628, 1632, 1635, 1638, 1642, 1646, 1650, 1654, 1658, 1662, 1666, 1670, 1674, 1677, 1680, 1683, 1686, 1689, 1692, 1695, 1698, 1701, 1704, 1707, 1736, 1765, 1793, 1821, 1849, 1878, 1907, 1936, 1964, 1993, 2022, 2051, 2080, 2109, 2138, 2182, 2183, 22)]
   
   
@@ -123,18 +123,20 @@ dados[is.na(dados)] = 0
                                                   "Lava_Loucas", 
                                                   "Aquecimento_Chuveiro", 
                                                   "Chuveiros"))]
+  return(dados_select)
 }
 
 # Filtrar dados por estado ----------------------------------------------
 filtrar_estados <- function(uf){
   # Filtrar UF
+  dados_filtrados = tratamento_dos_dados(dados)
   
-  dados_estado <- subset(dados_select, UF == uf)
+  dados_estado <- subset(dados_filtrados, UF == uf)
   
   dados_estado <- dados_estado[, !(names(dados_estado) %in% "UF")]
   
   return(dados_estado)
 }
 
-dados_RJ = filtrar_estados("RJ")
+dados_UF = filtrar_estados("RJ")
 
