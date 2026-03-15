@@ -88,7 +88,7 @@ dados_RJ = filtrar_estados("RJ", dados_filtrados)
 
     ##Classificacao com Redes Neurais -----------------------------------------
 
-      rn_class_RJ6 = rn_class(dados_RJ, 6)
+      rn_class_RJ6 = rn_class(dados_RJ, 6, 12)
 
       x11();{plot(rn_class_RJ6$modelo_rn, show.weights = FALSE)}
 
@@ -141,7 +141,7 @@ dados_RJ = filtrar_estados("RJ", dados_filtrados)
       
       ##Classificacao com Redes Neurais -----------------------------------------
       
-      rn_class_o6 = rn_class(dados_o, 6)
+      rn_class_o6 = rn_class(dados_o, 6, 12)
       
       x11();{plot(rn_class_o6$modelo_rn, show.weights = FALSE)}
       
@@ -194,7 +194,7 @@ dados_RJ = filtrar_estados("RJ", dados_filtrados)
 
     ##Classificacao com Redes Neurais -----------------------------------------
 
-      rn_class_cp6 = rn_class(dados_cp, 6)
+      rn_class_cp6 = rn_class(dados_cp, 6, 12, 0.001)
 
       x11();{plot(class_cp6$modelo_rn, show.weights = FALSE)}
 

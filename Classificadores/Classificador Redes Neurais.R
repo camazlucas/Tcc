@@ -1,8 +1,8 @@
 # Ajustando rede neural---------------------------------------------------
-rn_class <- function(dados, c){
+rn_class <- function(dados, qtd_de_classes, numero_de_neuronios = 12, lr = 0.01){
   
   #Divisao em Treino e Teste
-  split = divisao_das_classes(c, dados)
+  split = divisao_das_classes(qtd_de_classes, dados)
   
   treino = split$treino
   teste = split$teste
@@ -12,8 +12,8 @@ rn_class <- function(dados, c){
     CLASSE ~ .,
     treino,
     linear.output = FALSE,
-    learningrate = 0.01,
-    hidden = 12,
+    learningrate = lr,
+    hidden = numero_de_neuronios,
     act.fct = "logistic"
   )
   

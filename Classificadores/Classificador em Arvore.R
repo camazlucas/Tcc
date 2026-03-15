@@ -1,8 +1,8 @@
 # Classificacao em Arvore -------------------------------------------------
-arvore_class = function(dados, c){
+arvore_class = function(dados, qtd_de_classes){
   
   #Divisao em Treino e Teste
-  split = divisao_das_classes(c, dados)
+  split = divisao_das_classes(qtd_de_classes, dados)
   
   treino = split$treino
   teste = split$teste
