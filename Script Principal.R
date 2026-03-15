@@ -47,8 +47,21 @@ dados_cp = reduzir_com_cp(1, 0.13, dados_RJ)
 
 dados_o = dados_originais(dados, "RJ")
 
+class_o6 = rn_class(dados_o, 6)
 
+x11();{plot(class_o6$modelo_rn, show.weights = FALSE)}
 
+#print(class_o$matriz_de_confusao_rn)
+
+print(class_o6$metricas_rn)
+
+class_o3 = rn_class(dados_o, 3)
+
+x11();{plot(class_o3$modelo_rn, show.weights = FALSE)}
+
+#print(class_o$matriz_de_confusao_rn)
+
+print(class_o3$metricas_rn)
 
 
 
