@@ -1,11 +1,16 @@
 # Ajustando rede neural---------------------------------------------------
-rn_class <- function(treino, teste){
+rn_class <- function(dados, c){
+  
+  #Divisao em Treino e Teste
+  split = divisao_das_classes(c, dados)
+  
+  treino = split$treino
+  teste = split$teste
   
   # Treinando a rede neural
   classificador_RN <- neuralnet(
     CLASSE ~ .,
     treino,
-    rep = 1,
     linear.output = FALSE,
     learningrate = 0.01,
     hidden = 12,
@@ -57,22 +62,3 @@ rn_class <- function(treino, teste){
   ))
   
 }
-
-
-
-# Plots de Resultados da Rede Neural --------------------------------------
-
-rn_class(treino, teste)
-
-#Arquitetura da Rede
-x11();{plot(classificador_RN, show.weights = FALSE)}
-
-
-#Taxa de Aprendizagem
-x11();plot(classificador_RN$result.matrix[, 1], 
-           type = "l", 
-           xlab = "Itera??o", 
-           ylab = "Erro",
-           xlim = c(1, 200))
-
-print(classificador_RN)
