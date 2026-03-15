@@ -7,6 +7,7 @@ rm(list=ls(all=TRUE)) # Limpar a memória
 library(caret)
 library(dplyr)
 library(factoextra)
+library(xtable)
 
 #Redes Neurais
 
