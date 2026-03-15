@@ -1,8 +1,3 @@
-# Limpeza de Memoria ------------------------------------------------------
-
-rm(list=ls(all=TRUE)) # Limpar a memória
-
-
 # Upload dos Dados
 dados = read.csv2("https://huggingface.co/datasets/camazlucas/pph2019/resolve/main/PPH%202019%20-%20Banco%20de%20Dados%20V2.csv")
 dados[is.na(dados)] = 0
