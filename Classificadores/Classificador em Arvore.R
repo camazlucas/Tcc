@@ -1,5 +1,13 @@
 # Classificacao em Arvore -------------------------------------------------
-arvore_class = function(treino, teste){
+arvore_class = function(dados, c){
+  
+  #Divisao em Treino e Teste
+  split = divisao_das_classes(c, dados)
+  
+  treino = split$treino
+  teste = split$teste
+  
+  
   classificador = rpart(formula = CLASSE ~ ., data = treino, parms = list(split = 'information'))
   
   x11();rpart.plot(classificador, 
@@ -13,7 +21,7 @@ arvore_class = function(treino, teste){
   matriz_confusao_arvore = table(teste$CLASSE, previsao)
   #matriz_confusao_arvore
   
-  confusionMatrix(matriz_confusao_arvore)
+  matriz_confusao = confusionMatrix(matriz_confusao_arvore)
   
-  return(summary(classificador))
+  return(matriz_confusao)
 }

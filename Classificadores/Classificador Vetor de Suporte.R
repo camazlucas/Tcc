@@ -1,5 +1,13 @@
 # Maquinas de Vetor de Suporte --------------------------------------------
-svm_class = function(treino, teste){
+svm_class = function(dados, c){
+  
+  #Divisao em Treino e Teste
+  split = divisao_das_classes(c, dados)
+  
+  treino = split$treino
+  teste = split$teste
+  
+  
   treino_svm = treino
   valores_unicos <- unique(treino_svm$CLASSE)
   valores_unicos_ordenados <- sort(valores_unicos)
