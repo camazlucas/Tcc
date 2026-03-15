@@ -22,6 +22,24 @@ library(rpart.plot)
 library(e1071)
 library(ggplot2)
 
+# Funcoes Utilizadas -------------------------------
+
+#Filtragem e Analise dos Dados
+source("Bases de Dados/Tratamento da Base de Dados Totais PPH-2019.r")
+source("Analise dos Dados.r")
+
+#Preparacao das Bases de Dados aplicadas
+source("Bases de Dados/Base de Dados Original.r")
+source("Bases de Dados/Base de Dados por Componentes Principais.r")
+source("Bases de Dados/Base de Dados por Estado.r")
+
+#Classificadores Utilizados
+source("Classificadores/Classificador em Arvore.r")
+source("Classificadores/Classificador Redes Neurais.r")
+source("Classificadores/Classificador Vetor de Suporte.r")
+source("Classificadores/Divisao da Quantidade de Classes Sociais Utilizadas.r")
+
+
 # Dados Utilizados -----------------------------------
 
 # Upload dos Dados
@@ -45,23 +63,34 @@ dados_cp = reduzir_com_cp(1, 0.13, dados_RJ)
 
 #Classificação com os Dados Originais da Pesquisa ----------------------------
 
-dados_o = dados_originais(dados, "RJ")
+  dados_o = dados_originais(dados, "RJ")
 
-class_o6 = rn_class(dados_o, 6)
+  ## Analise Exploratoria dos Dados
 
-x11();{plot(class_o6$modelo_rn, show.weights = FALSE)}
+    graficos_dispersao(dados_o)
+    
+    boxplot_dispersao(dados_o)
+    
+    estat_dados(dados_o)
 
-#print(class_o$matriz_de_confusao_rn)
 
-print(class_o6$metricas_rn)
+    ##Classificacao com Redes Neurais --------------------------------------------
 
-class_o3 = rn_class(dados_o, 3)
+      rn_class_o6 = rn_class(dados_o, 6)
 
-x11();{plot(class_o3$modelo_rn, show.weights = FALSE)}
+      x11();{plot(class_o6$modelo_rn, show.weights = FALSE)}
 
-#print(class_o$matriz_de_confusao_rn)
+      #print(class_o$matriz_de_confusao_rn)
 
-print(class_o3$metricas_rn)
+      print(class_o6$metricas_rn)
+
+      rn_class_o3 = rn_class(dados_o, 3)
+
+      x11();{plot(class_o3$modelo_rn, show.weights = FALSE)}
+
+      #print(class_o$matriz_de_confusao_rn)
+
+      print(class_o3$metricas_rn)
 
 
 
