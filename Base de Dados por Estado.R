@@ -1,7 +1,6 @@
 # Filtrar dados por estado ----------------------------------------------
-filtrar_estados <- function(uf){
+filtrar_estados <- function(uf, dados_filtrados){
   # Filtrar UF
-  dados_filtrados = tratamento_dos_dados(dados)
   
   dados_estado <- subset(dados_filtrados, UF == uf)
   
@@ -9,6 +8,4 @@ filtrar_estados <- function(uf){
   
   return(dados_estado)
 }
-
-dados_UF = filtrar_estados("RJ")
 

@@ -1,7 +1,7 @@
 # Aplicando Componentes Principais para reducao da dimensão ---------------
-reduzir_com_cp = function(qtd_cp, peso){
-  ind_class = which(names(dados_UF) == "CLASSE")
-  dados_cp = dados_UF[,-ind_class] #removendo a coluna de classes sociais
+reduzir_com_cp = function(qtd_cp, peso, dados){
+  ind_class = which(names(dados) == "CLASSE")
+  dados_cp = dados[,-ind_class] #removendo a coluna de classes sociais
   comp_princ = prcomp(dados_cp, scale = TRUE)
   
   #Visualizacao dos Resultados
@@ -32,14 +32,11 @@ reduzir_com_cp = function(qtd_cp, peso){
   nomes_variaveis_componentes <- unlist(variaveis_contribuicao[1:qtd_cp]) # Unir os nomes das vari?veis selecionadas para as componentes principais em um vetor
   nomes_variaveis_unicos <- unique(nomes_variaveis_componentes) # Remover valores duplicados
   nomes_variaveis_unicos # Exibir os nomes das vari?veis ?nicas
-  dados_reduzidos = dados_UF[,nomes_variaveis_unicos]
-  CLASSE = dados_UF$CLASSE
+  dados_reduzidos = dados[,nomes_variaveis_unicos]
+  CLASSE = dados$CLASSE
   dados_reduzidos = cbind(dados_reduzidos, CLASSE)
   
   return(dados_reduzidos)
 }
 
 
-## Escolha a Quantidade de Componentes Principais e a porcentagem  --------
-
-dados_cp = reduzir_com_cp(1, 0.13) 

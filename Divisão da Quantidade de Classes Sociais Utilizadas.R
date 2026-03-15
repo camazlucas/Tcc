@@ -1,6 +1,3 @@
-library(tidyverse)
-library(caret)
-
 # Definindo a quantidade de Classes Sociais Utilizadas --------------------
 divisao_das_classes = function(x, dados_RN){
 if (x == 6) {
@@ -82,9 +79,3 @@ else {
   return(list(treino = treino, teste = teste))
 
 }
-
-# Selecionar o Número de Classes -----------------------------------------------
-split <- divisao_das_classes(6, dados_o)
-
-treino <- split$treino
-teste  <- split$teste

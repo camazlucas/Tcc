@@ -1,6 +1,6 @@
 # Selecionando dados padroes para a analise de classes --------------------
-dados_originais = function(){
-  dados_orig = dados[, c(7:22, 51)]
+dados_originais = function(dados, UF){
+  dados_orig = dados[, c(3, 7:22, 51)]
   
   summary(dados_orig)
   
@@ -14,7 +14,8 @@ dados_originais = function(){
   
   dados_orig = subset(dados_orig, P5.13 == 1)
   
-  names(dados_orig) = c("Automoveis", 
+  names(dados_orig) = c("UF",
+                        "Automoveis", 
                         "Empregados", 
                         "Lava_Roupas", 
                         "Banheiros", 
@@ -30,10 +31,10 @@ dados_originais = function(){
                         "Rua",
                         "Instrucao",
                         "CLASSE")
-  
+  dados_orig = filtrar_estados(UF, dados_orig)
   dados_orig = dados_orig[,-17]
   
   return(dados_orig)
 }
 
-dados_o = dados_originais()
+
