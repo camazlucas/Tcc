@@ -1,10 +1,10 @@
 # Definindo a quantidade de Classes Sociais Utilizadas --------------------
-divisao_das_classes = function(x, dados_RN){
+divisao_das_classes = function(dados_RN, x){
 if (x == 6) {
   ## Classificacao em 6 classes ----------------------------------------------
   ### Removendo valor numerico das Classes ------------------------------------
   
-  dados_UF_6classes = dados_RN %>% mutate(CLASSE = case_when(
+  dados_classe = dados_RN %>% mutate(CLASSE = case_when(
     CLASSE == 1 ~ "A",
     CLASSE == 2 ~ "B1",
     CLASSE == 3 ~ "B2",
@@ -13,16 +13,6 @@ if (x == 6) {
     CLASSE == 6 ~ "DE",
     TRUE ~ as.character(CLASSE)
   ))
-  
-  
-  ### Particao de 70% dos dados -----------------------------------------------
-  
-  particao_6 = createDataPartition(1:nrow(dados_UF_6classes),p=0.7)
-  dataset_treino_6 = dados_UF_6classes[particao_6$Resample1,]
-  dataset_teste_6 = dados_UF_6classes[- particao_6$Resample1,]
-
-  treino = dataset_treino_6
-  teste = dataset_teste_6
   
 }
   
@@ -60,22 +50,13 @@ else if (x == 3) {
     sample_n(tamanho_minimo) %>% 
     ungroup()
   
-  dados_UF_3classes = dados_bal
-  
-  
-  ### Particao de 70% dos dados -----------------------------------------------
-  
-  particao_3 = createDataPartition(1:nrow(dados_UF_3classes),p=0.7)
-  dataset_treino_3 = dados_UF_3classes[particao_3$Resample1,]
-  dataset_teste_3 = dados_UF_3classes[- particao_3$Resample1,]
+  dados_classe = dados_bal
 
-  treino = dataset_treino_3
-  teste = dataset_teste_3
 }
 else {
   stop("Selecione 3 ou 6 classes")
 }
   
-  return(list(treino = treino, teste = teste))
+  return(dados_classe)
 
 }

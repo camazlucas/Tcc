@@ -2,10 +2,9 @@
 rn_class <- function(dados, qtd_de_classes, numero_de_neuronios = 12, lr = 0.01){
   
   #Divisao em Treino e Teste
-  split = divisao_das_classes(qtd_de_classes, dados)
-  
-  treino = split$treino
-  teste = split$teste
+  divisao = divisao_dos_dados(dados, qtd_de_classes)
+  treino = divisao$treino
+  teste = divisao$teste
   
   # Treinando a rede neural
   classificador_RN <- neuralnet(

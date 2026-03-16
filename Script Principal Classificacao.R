@@ -39,6 +39,7 @@ source("Classificadores/Classificador em Arvore.r")
 source("Classificadores/Classificador Redes Neurais.r")
 source("Classificadores/Classificador Vetor de Suporte.r")
 source("Classificadores/Divisao da Quantidade de Classes Sociais Utilizadas.r")
+source("Classificadores/Treino e Teste.r")
 
 
 # Dados Utilizados -----------------------------------
