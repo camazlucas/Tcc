@@ -57,6 +57,9 @@ fechar_grafico <- function() {
   if (!interativo && grDevices::dev.cur() > 1) {
     try(grDevices::dev.off(), silent = TRUE)
   }
+  # dev.off() devolve o dispositivo atual; sem isto o "null device" aparece
+  # no relatorio a cada grafico fechado.
+  invisible(NULL)
 }
 
 # Funcoes do projeto ------------------------------------------------------
