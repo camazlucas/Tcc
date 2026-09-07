@@ -126,23 +126,25 @@ A classificação completa leva cerca de 4 minutos; uma base isolada, menos de 1
 
 Acurácia no conjunto de teste, divisão em 6 estratos:
 
-| Base | Modelo | Acurácia | Kappa |
-|---|---|---|---|
-| Originais | Rede Neural | 0,945 | 0,930 |
-| Originais | SVM | 0,890 | 0,860 |
-| Originais | Árvore | 0,729 | 0,653 |
-| Componentes Principais | SVM | 0,540 | 0,405 |
-| Totais RJ | Árvore | 0,524 | 0,382 |
-| Totais RJ | SVM | 0,512 | 0,365 |
-| Totais RJ | Rede Neural | 0,491 | 0,350 |
-| Componentes Principais | Árvore | 0,448 | 0,293 |
-| Componentes Principais | Rede Neural | 0,448 | 0,294 |
+| Base | Modelo | Acurácia | Kappa | IC 95% |
+|---|---|---|---|---|
+| Originais | Rede Neural | 0,939 | 0,922 | 0,907 – 0,962 |
+| Originais | SVM | 0,905 | 0,879 | 0,868 – 0,935 |
+| Originais | Árvore | 0,653 | 0,555 | 0,599 – 0,705 |
+| Totais RJ | SVM | 0,528 | 0,392 | 0,472 – 0,583 |
+| Componentes Principais | Árvore | 0,518 | 0,379 | 0,463 – 0,574 |
+| Totais RJ | Árvore | 0,506 | 0,368 | 0,451 – 0,562 |
+| Componentes Principais | SVM | 0,503 | 0,366 | 0,447 – 0,559 |
+| Componentes Principais | Rede Neural | 0,436 | 0,283 | 0,381 – 0,491 |
+| Totais RJ | Rede Neural | 0,420 | 0,266 | 0,366 – 0,476 |
 
-Com 3 faixas os valores sobem: a base Originais chega a 0,980 e as demais ficam entre 0,67 e 0,79.
+Com 3 faixas os valores sobem: a base Originais chega a 0,971 e as demais ficam entre 0,647 e 0,775.
 
-**Leitura principal:** reduzir de 61 para 23 variáveis por componentes principais não custa desempenho — a base reduzida empata ou supera a completa nos três classificadores. A posse de equipamentos sozinha sustenta uma separação em 3 faixas com acurácia perto de 0,75, mas se mostra insuficiente para distinguir os 6 estratos do Critério Brasil.
+**Leitura principal:** reduzir de 61 para 23 variáveis por componentes principais **não custa desempenho de forma detectável**. Nas duas bases os intervalos de confiança se sobrepõem amplamente em todos os classificadores — por exemplo, SVM com 6 estratos dá 0,528 (0,472 – 0,583) na base completa contra 0,503 (0,447 – 0,559) na reduzida. Ou seja, 38 variáveis a menos sem diferença estatisticamente distinguível.
 
-Os valores exatos variam entre execuções, porque a divisão treino/teste é sorteada a cada chamada.
+A posse de equipamentos sozinha sustenta uma separação em 3 faixas com acurácia em torno de 0,77, mas se mostra insuficiente para os 6 estratos do Critério Brasil, onde nenhum modelo passa de 0,53.
+
+Como os três classificadores agora recebem a mesma divisão, a comparação **entre modelos dentro de uma mesma base** é direta. Os valores absolutos ainda variam entre execuções no caminho de 6 classes, porque a divisão é sorteada; no de 3 classes eles são estáveis, pelo motivo descrito em Limitações.
 
 ## Tecnologias
 
