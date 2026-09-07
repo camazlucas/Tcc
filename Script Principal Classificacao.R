@@ -197,19 +197,19 @@ dados_RJ = filtrar_estados("RJ", dados_filtrados)
 
       rn_class_cp6 = rn_class(dados_cp, 6, 12, 0.001)
 
-      x11();{plot(class_cp6$modelo_rn, show.weights = FALSE)}
+      x11();{plot(rn_class_cp6$modelo_rn, show.weights = FALSE)}
 
       #print(class_o$matriz_de_confusao_rn)
 
-      print(class_cp6$metricas_rn)
+      print(rn_class_cp6$metricas_rn)
 
       rn_class_cp3 = rn_class(dados_cp, 3)
 
-      x11();{plot(class_cp3$modelo_rn, show.weights = FALSE)}
+      x11();{plot(rn_class_cp3$modelo_rn, show.weights = FALSE)}
 
       #print(class_o$matriz_de_confusao_rn)
 
-      print(class_cp3$metricas_rn)
+      print(rn_class_cp3$metricas_rn)
 
 
 
