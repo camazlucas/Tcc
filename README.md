@@ -100,10 +100,10 @@ Rscript -e "renv::restore()"
 
 **2. Obtenha os dados.** Os dois subprojetos têm origens diferentes:
 
-| Subprojeto | Base | Origem | Precisa baixar? |
-|---|---|---|---|
-| Classificação | PPH 2019 | [Hugging Face](https://huggingface.co/datasets/camazlucas/pph2019) | Sim |
-| Clusterização | consumo por UF | já vem no repositório, em `data-raw/clusterizacao/` | Não |
+| Subprojeto | Base | Origem |
+|---|---|---|
+| Classificação | PPH 2019 | [Hugging Face](https://huggingface.co/datasets/camazlucas/pph2019) |
+| Clusterização | consumo por UF | [GitHub](data-raw/clusterizacao/) |
 
 A base da PPH 2019 tem cerca de 70 MB, grande demais para o controle de versão, e por isso fica hospedada no Hugging Face. O script abaixo a baixa para `data-raw/classificacao/pph2019.csv` e só precisa rodar uma vez — a URL está no próprio script:
 
