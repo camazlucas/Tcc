@@ -1,0 +1,5 @@
+# Arquivos do container precisam de LF mesmo em checkout no Windows: um \r
+# no fim das linhas de continuacao do RUN quebra o shell dentro do build.
+Dockerfile      text eol=lf
+.dockerignore   text eol=lf
+docker-compose.yml text eol=lf
