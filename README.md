@@ -38,7 +38,9 @@ As preditoras são normalizadas por min-max para a rede neural, com mínimos e m
 
 ### Estudo independente: agrupamento das UFs
 
-O TCC tem **dois subprojetos independentes**. Além da classificação, o repositório abriga o agrupamento das 27 unidades da federação por perfil de consumo elétrico, a partir de `data-raw/clusterizacao/dados-intenso-forte.csv`. Usa ligação completa (distâncias euclidiana e de Minkowski) e k-médias.
+O TCC tem **dois subprojetos independentes**. Além da classificação, o repositório abriga o agrupamento das 27 unidades da federação por perfil de consumo elétrico, a partir de `data-raw/clusterizacao/dados-intenso-forte.csv`. Usa agrupamento hierárquico por ligação completa, com distância euclidiana, e k-médias.
+
+**Sobre a escolha do número de grupos.** Dois artifícios informam essa decisão, e nenhum dos dois a determina: o `NbClust`, que combina 30 índices e devolve uma sugestão por regra da maioria, e o gráfico do método do cotovelo, construído iterando o número de grupos e observando a soma de quadrados intra-grupo. Aqui os dois divergem — a regra da maioria do `NbClust` aponta **2**, o cotovelo aponta **3** — e o trabalho adota **3**, apoiado no cotovelo e na interpretabilidade dos grupos resultantes. A divergência é deliberada: o `NbClust` entra como opinião a ponderar, não como critério de decisão.
 
 Os dois não compartilham dados, nem diretório de saída, nem funções — exceto as estatísticas descritivas de `R/comum/estatisticas.R`. Cada um tem o seu próprio script em `analysis/`, e nenhum depende do outro para rodar.
 

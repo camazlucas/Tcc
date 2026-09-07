@@ -1,7 +1,7 @@
 # Agrupamento das unidades da federacao por perfil de consumo eletrico
 #
 # Agrupa as UFs a partir da posse de equipamentos e do consumo residencial,
-# por ligacao completa (distancias euclidiana e de Minkowski) e por k-medias.
+# por ligacao completa com distancia euclidiana e por k-medias.
 #
 #   Rscript analysis/clusterizacao.R
 
@@ -132,51 +132,39 @@ print(
 print(t(estatisticas))
 
 # Numero de grupos sugerido -----------------------------------------------
-# NbClust combina 30 indices; index = "all" e demorado mas e o criterio
-# usado no trabalho.
+# NbClust e o metodo do cotovelo, mais abaixo, sao dois artificios
+# CONSULTIVOS: informam a escolha do numero de grupos, nao a determinam. A
+# regra da maioria do NbClust aponta 2, o cotovelo aponta 3, e o trabalho
+# adota 3. A divergencia e deliberada, nao um descuido.
+#
+# index = "all" combina 30 indices e responde pela maior parte do tempo de
+# execucao deste script.
 
-secao("nbclust-euclidiana")
+secao("nbclust")
 x11()
 melhor_eucl <- NbClust(dados_padr,
   distance = "euclidean", method = "complete",
   min.nc = 2, max.nc = 8, index = "all"
 )
 fechar_grafico()
-cat("\nMelhor numero de grupos (euclidiana):\n")
+cat("\nSugestao do NbClust por indice:\n")
 print(melhor_eucl$Best.nc[1, ])
 
-secao("nbclust-minkowski")
-x11()
-melhor_mink <- NbClust(dados_padr,
-  distance = "minkowski", method = "complete",
-  min.nc = 2, max.nc = 8, index = "all"
-)
-fechar_grafico()
-cat("\nMelhor numero de grupos (Minkowski):\n")
-print(melhor_mink$Best.nc[1, ])
-
 # Ligacao completa --------------------------------------------------------
+# Apenas distancia euclidiana. agrupar_hierarquico() aceita qualquer metrica
+# de dist(), mas o trabalho usa a euclidiana.
 
 agrup_eucl <- agrupar_hierarquico(dados_padr, "euclidean", k = 3)
-secao("dendrograma-euclidiana")
+secao("dendrograma")
 plotar_dendrograma(
   agrup_eucl, 3,
   "Dendrograma dos Clusters - Distancia Euclidiana"
 )
 fechar_grafico()
 
-agrup_mink <- agrupar_hierarquico(dados_padr, "minkowski", k = 4)
-secao("dendrograma-minkowski")
-plotar_dendrograma(
-  agrup_mink, 4,
-  "Dendrograma dos Clusters - Distancia de Minkowski"
-)
-fechar_grafico()
-
 ufs_por_grupo <- data.frame(
   UF = rownames(dados_nome),
-  Euclidiana = agrup_eucl$grupos,
-  Minkowski = agrup_mink$grupos
+  Euclidiana = agrup_eucl$grupos
 )
 write.csv2(
   ufs_por_grupo,
