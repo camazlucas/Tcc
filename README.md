@@ -115,6 +115,32 @@ Os dados da clusterização são dois CSVs de poucos kilobytes, versionados junt
 
 Feito isso, o ambiente está pronto. A execução em si está na seção seguinte.
 
+### Alternativa: Docker
+
+O `renv` fixa as versões dos pacotes R, mas não fixa o R em si, o compilador, a BLAS nem as bibliotecas gráficas — e delas dependem tanto a convergência do `neuralnet` quanto o desenho dos PNGs. Quem preferir não instalar nada disso na própria máquina pode rodar o compendium em container, com o ambiente inteiro congelado.
+
+**Requisitos:** Docker. Nada de R, nem de RStudio.
+
+```bash
+git clone https://github.com/camazlucas/Tcc.git
+cd Tcc
+docker compose build
+```
+
+O build restaura os mesmos pacotes do `renv.lock`, agora sobre R 4.5.1 e Ubuntu 24.04 fixos. Leva alguns minutos na primeira vez e fica em cache depois.
+
+Daí em diante, **todo comando da seção seguinte vale igual, prefixado por `docker compose run --rm tcc`**:
+
+```bash
+docker compose run --rm tcc Rscript data-raw/classificacao/download-pph2019.R
+docker compose run --rm tcc Rscript analysis/classificacao.R
+docker compose run --rm tcc Rscript analysis/clusterizacao.R
+```
+
+O projeto é montado como volume, então as figuras e tabelas aparecem em `output/` no seu próprio disco, e o código pode ser editado no host sem refazer a imagem. Os scripts detectam a ausência de interface gráfica e gravam PNG — o mesmo comportamento de rodar `Rscript` fora do container, sem necessidade de X11.
+
+> Em host Linux os arquivos de `output/` saem pertencendo ao `root`. Para evitar isso, acrescente `--user "$(id -u):$(id -g)"` ao `docker compose run`. No Windows e no macOS não é preciso.
+
 ## Execução
 
 Cada subprojeto tem um script, e os dois são independentes — rode o que precisar, em qualquer ordem:
