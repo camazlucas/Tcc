@@ -1,6 +1,6 @@
 #' Padroniza a base de consumo por UF
 #'
-#' @param dados Base lida de `data-raw/dados-intenso-forte.csv`.
+#' @param dados Base lida de `data-raw/clusterizacao/dados-intenso-forte.csv`.
 #' @param colunas Indices das colunas numericas a manter.
 #'
 #' @return Lista com `bruto` (escala original, UF nas linhas) e `padronizado`.

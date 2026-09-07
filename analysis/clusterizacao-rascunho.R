@@ -2,7 +2,7 @@
 #
 # Este arquivo preserva dois blocos exploratorios que estavam no script
 # original de clusterizacao e que nao rodam. Foram separados para que o
-# analysis/02-clusterizacao.R contenha apenas o que executa de ponta a ponta.
+# analysis/clusterizacao.R contenha apenas o que executa de ponta a ponta.
 #
 # BLOCO 1 - Redes neurais sobre os clusters
 #
@@ -31,7 +31,7 @@
 #   troque o setwd() por here("data-raw", "...").
 #
 #   A logica de selecao de variaveis por peso na componente ja existe, pronta e
-#   parametrizada, em R/dados-componentes.R (funcao reduzir_com_cp).
+#   parametrizada, em R/classificacao/dados-componentes.R (funcao reduzir_com_cp).
 #
 # O codigo abaixo esta comentado de proposito. O historico completo, antes da
 # reestruturacao, esta no Git.

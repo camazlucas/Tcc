@@ -38,38 +38,51 @@ As preditoras são normalizadas por min-max para a rede neural, com mínimos e m
 
 ### Estudo independente: agrupamento das UFs
 
-O repositório abriga também um segundo trabalho, **separado da classificação e com outra base de dados**: o agrupamento das 27 unidades da federação por perfil de consumo elétrico, a partir de `data-raw/dados-intenso-forte.csv`. Usa ligação completa (distâncias euclidiana e de Minkowski) e k-médias. Não compartilha dados nem funções com o pipeline de classificação — só o diretório de saída.
+O TCC tem **dois subprojetos independentes**. Além da classificação, o repositório abriga o agrupamento das 27 unidades da federação por perfil de consumo elétrico, a partir de `data-raw/clusterizacao/dados-intenso-forte.csv`. Usa ligação completa (distâncias euclidiana e de Minkowski) e k-médias.
+
+Os dois não compartilham dados, nem diretório de saída, nem funções — exceto as estatísticas descritivas de `R/comum/estatisticas.R`. Cada um tem o seu próprio script em `analysis/`, e nenhum depende do outro para rodar.
 
 ## Estrutura do projeto
 
-O layout segue a convenção de *research compendium* para projetos de análise em R (Marwick, Boettiger & Mullen, 2018).
+O layout segue a convenção de *research compendium* para projetos de análise em R (Marwick, Boettiger & Mullen, 2018), com os **dois subprojetos separados** em cada nível.
 
 ```
-├── R/                      Funções reutilizáveis, sem efeitos colaterais
-│   ├── dados-pph2019.R         tratamento da base bruta
-│   ├── dados-originais.R       variáveis do Critério Brasil
-│   ├── dados-estado.R          recorte por UF
-│   ├── dados-componentes.R     seleção por componentes principais
-│   ├── analise-exploratoria.R  dispersão, boxplot, estatísticas
-│   ├── classes-sociais.R       agrupamento em 3 ou 6 classes
-│   ├── treino-teste.R          divisão e normalização
-│   ├── classificador-*.R       árvore, SVM e rede neural
-│   └── clusterizacao.R         agrupamento das UFs
+├── R/                          Funções reutilizáveis, sem efeitos colaterais
+│   ├── comum/
+│   │   └── estatisticas.R          descritivas, usadas pelos dois
+│   ├── classificacao/
+│   │   ├── dados-pph2019.R         tratamento da base bruta
+│   │   ├── dados-originais.R       variáveis do Critério Brasil
+│   │   ├── dados-estado.R          recorte por UF
+│   │   ├── dados-componentes.R     seleção por componentes principais
+│   │   ├── dispersao.R             dispersão no plano das componentes
+│   │   ├── classes-sociais.R       agrupamento em 3 ou 6 classes
+│   │   ├── treino-teste.R          divisão estratificada e normalização
+│   │   └── classificador-*.R       árvore, SVM e rede neural
+│   └── clusterizacao/
+│       └── agrupamento.R           hierárquico e k-médias
 │
-├── analysis/               Scripts executáveis, numerados
-│   ├── 01-classificacao.R
-│   ├── 02-clusterizacao.R
-│   └── rascunho-clusterizacao-supervisionada.R
+├── analysis/                   Scripts executáveis, um por subprojeto
+│   ├── classificacao.R
+│   ├── clusterizacao.R
+│   └── clusterizacao-rascunho.R    blocos preservados, não executam
 │
-├── data-raw/               Dados de entrada
-│   ├── download-pph2019.R      baixa a base (~70 MB, fora do Git)
-│   ├── dados-intenso-forte.csv
-│   └── dados-totais.csv
+├── data-raw/                   Dados de entrada
+│   ├── classificacao/
+│   │   ├── download-pph2019.R      baixa a base (~70 MB, fora do Git)
+│   │   └── pph2019.csv             (gerado pelo download)
+│   └── clusterizacao/
+│       ├── dados-intenso-forte.csv
+│       └── dados-totais.csv
 │
-└── output/                 Gerado pelos scripts, fora do Git
-    ├── figures/                gráficos em PNG
-    └── tables/                 CSV, LaTeX e relatório
+└── output/                     Gerado pelos scripts, fora do Git
+    ├── classificacao/  figures/  tables/
+    └── clusterizacao/  figures/  tables/
 ```
+
+Cada script de `analysis/` carrega apenas `R/comum/` e a pasta do seu próprio subprojeto — a separação é imposta pelo código, não só pela convenção de nomes. Os arquivos não são numerados porque os dois subprojetos são independentes: não há ordem de execução entre eles.
+
+> Subpastas dentro de `R/` funcionam num compendium, mas **não** num pacote R, onde `R/` precisa ser plano. O `DESCRIPTION` aqui está no papel de metadado do compendium, não de pacote instalável.
 
 ## Como replicar
 
@@ -86,13 +99,13 @@ Rscript -e "renv::restore()"
 **2. Baixe a base da PPH 2019.** São cerca de 70 MB, por isso ela não está no repositório. Só precisa rodar uma vez:
 
 ```bash
-Rscript data-raw/download-pph2019.R
+Rscript data-raw/classificacao/download-pph2019.R
 ```
 
 **3. Rode a classificação.** Sem argumentos, roda as três bases com 6 e 3 classes:
 
 ```bash
-Rscript analysis/01-classificacao.R
+Rscript analysis/classificacao.R
 ```
 
 Você pode escolher a base e a divisão das classes:
@@ -107,7 +120,7 @@ Você pode escolher a base e a divisão das classes:
 Por exemplo, só a base reduzida por componentes principais, em 6 estratos:
 
 ```bash
-Rscript analysis/01-classificacao.R --base=componentes --classes=6
+Rscript analysis/classificacao.R --base=componentes --classes=6
 ```
 
 Rodar uma base isolada apaga apenas as figuras daquela base, preservando as das demais.
@@ -115,10 +128,10 @@ Rodar uma base isolada apaga apenas as figuras daquela base, preservando as das 
 **4. Rode a clusterização** (estudo independente, com outra base de dados):
 
 ```bash
-Rscript analysis/02-clusterizacao.R
+Rscript analysis/clusterizacao.R
 ```
 
-Os scripts detectam o ambiente. Via `Rscript` os gráficos vão para `output/figures/` em PNG e a saída do console é gravada em `output/tables/relatorio.txt`. Abertos no RStudio, os gráficos abrem em janelas.
+Os scripts detectam o ambiente. Via `Rscript` os gráficos vão para `output/<subprojeto>/figures/` em PNG e a saída do console é gravada em `output/<subprojeto>/tables/relatorio.txt`. Abertos no RStudio, os gráficos abrem em janelas.
 
 A classificação completa leva cerca de 4 minutos; uma base isolada, menos de 1. A clusterização leva cerca de 1 minuto (o `NbClust` com `index = "all"` responde pela maior parte).
 
@@ -153,7 +166,7 @@ R, com `caret` para métricas e partição, `rpart`, `e1071` e `neuralnet` para 
 ## Limitações conhecidas
 
 - Há um `set.seed(42)` dentro de `divisao_das_classes()`, usado para tornar reprodutível a reamostragem das 3 faixas. Como ele reinicia o gerador de números aleatórios, toda a aleatoriedade seguinte fica presa àquela semente: no caminho de 3 classes, a divisão treino/teste é sempre a mesma entre execuções. No caminho de 6 classes, que não passa por esse trecho, ela varia normalmente.
-- O arquivo `analysis/rascunho-clusterizacao-supervisionada.R` preserva dois blocos exploratórios que **não executam**: um depende de um CSV ausente do repositório, o outro tem erros de indexação documentados no próprio arquivo.
+- O arquivo `analysis/clusterizacao-rascunho.R` preserva dois blocos exploratórios que **não executam**: um depende de um CSV ausente do repositório, o outro tem erros de indexação documentados no próprio arquivo.
 - A base bruta da PPH 2019 é redistribuída via Hugging Face pelo autor; a fonte original é a Eletrobras/Procel.
 
 ## Autor

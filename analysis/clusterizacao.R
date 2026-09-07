@@ -3,7 +3,7 @@
 # Agrupa as UFs a partir da posse de equipamentos e do consumo residencial,
 # por ligacao completa (distancias euclidiana e de Minkowski) e por k-medias.
 #
-#   Rscript analysis/02-clusterizacao.R
+#   Rscript analysis/clusterizacao.R
 
 rm(list = ls(all = TRUE))
 
@@ -18,14 +18,14 @@ library(xtable)
 
 # Saidas ------------------------------------------------------------------
 
-pasta_figuras <- here("output", "figures")
-pasta_tabelas <- here("output", "tables")
+pasta_figuras <- here("output", "clusterizacao", "figures")
+pasta_tabelas <- here("output", "clusterizacao", "tables")
 dir.create(pasta_figuras, recursive = TRUE, showWarnings = FALSE)
 dir.create(pasta_tabelas, recursive = TRUE, showWarnings = FALSE)
 
 unlink(list.files(
   pasta_figuras,
-  pattern = "^cluster-.*\\.png$", full.names = TRUE
+  pattern = "\\.png$", full.names = TRUE
 ))
 
 # Modo grafico ------------------------------------------------------------
@@ -42,7 +42,7 @@ if (!interativo) {
     grDevices::png(
       file.path(
         pasta_figuras,
-        sprintf("cluster-%02d-%s.png", .contador_grafico, .rotulo_grafico)
+        sprintf("%02d-%s.png", .contador_grafico, .rotulo_grafico)
       ),
       width = 1400, height = 900, res = 120
     )
@@ -64,12 +64,15 @@ fechar_grafico <- function() {
 
 # Funcoes do projeto ------------------------------------------------------
 
-source(here("R", "clusterizacao.R"))
-source(here("R", "analise-exploratoria.R"))
+# Carrega apenas o que este subprojeto usa.
+source(here("R", "comum", "estatisticas.R"))
+source(here("R", "clusterizacao", "agrupamento.R"))
 
 # Dados -------------------------------------------------------------------
 
-dados_intensos <- read.csv2(here("data-raw", "dados-intenso-forte.csv"))
+dados_intensos <- read.csv2(
+  here("data-raw", "clusterizacao", "dados-intenso-forte.csv")
+)
 preparados <- preparar_dados_uf(dados_intensos)
 
 dados_nome <- preparados$bruto
@@ -253,4 +256,4 @@ write.csv2(
 cat("\nAgrupamento final das UFs:\n")
 print(ufs_por_grupo, row.names = FALSE)
 
-cat("\nSaida gravada em", here("output"), "\n")
+cat("\nSaida gravada em", here("output", "clusterizacao"), "\n")

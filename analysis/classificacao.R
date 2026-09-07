@@ -2,7 +2,7 @@
 #
 # Compara tres classificadores sobre as bases derivadas da PPH 2019.
 #
-#   Rscript analysis/01-classificacao.R [--base=...] [--classes=...]
+#   Rscript analysis/classificacao.R [--base=...] [--classes=...]
 #
 #   --base     totais | originais | componentes | todas   (padrao: todas)
 #   --classes  6 | 3 | ambas                              (padrao: ambas)
@@ -10,11 +10,11 @@
 #   --help     mostra esta ajuda
 #
 # Exemplos:
-#   Rscript analysis/01-classificacao.R --base=componentes --classes=6
-#   Rscript analysis/01-classificacao.R --base=todas --classes=3
+#   Rscript analysis/classificacao.R --base=componentes --classes=6
+#   Rscript analysis/classificacao.R --base=todas --classes=3
 #
 # Funciona nos dois modos: no RStudio os graficos abrem em janelas; via
-# Rscript vao para output/figures/ em PNG. Sem argumentos, roda tudo.
+# Rscript vao para output/classificacao/figures/ em PNG.
 
 rm(list = ls(all = TRUE))
 
@@ -24,7 +24,7 @@ argumentos <- commandArgs(trailingOnly = TRUE)
 
 ajuda <- function() {
   cat(
-    "Uso: Rscript analysis/01-classificacao.R [opcoes]\n\n",
+    "Uso: Rscript analysis/classificacao.R [opcoes]\n\n",
     "  --base=totais|originais|componentes|todas   base a analisar\n",
     "  --classes=6|3|ambas                         divisao das classes\n",
     "  --uf=RJ                                     unidade da federacao\n",
@@ -99,8 +99,8 @@ library(ggplot2)
 
 # Saidas ------------------------------------------------------------------
 
-pasta_figuras <- here("output", "figures")
-pasta_tabelas <- here("output", "tables")
+pasta_figuras <- here("output", "classificacao", "figures")
+pasta_tabelas <- here("output", "classificacao", "tables")
 dir.create(pasta_figuras, recursive = TRUE, showWarnings = FALSE)
 dir.create(pasta_tabelas, recursive = TRUE, showWarnings = FALSE)
 
@@ -142,20 +142,27 @@ fechar_grafico <- function() {
 
 # Funcoes do projeto ------------------------------------------------------
 
-for (arquivo in list.files(here("R"), pattern = "\\.R$", full.names = TRUE)) {
-  source(arquivo)
+# Carrega apenas o que este subprojeto usa: as estatisticas compartilhadas
+# e as funcoes da classificacao.
+for (pasta in c("comum", "classificacao")) {
+  for (arquivo in list.files(
+    here("R", pasta),
+    pattern = "\\.R$", full.names = TRUE
+  )) {
+    source(arquivo)
+  }
 }
 
 # Dados -------------------------------------------------------------------
 # O CSV tem cerca de 70 MB e fica fora do controle de versao. Baixe uma vez
-# com data-raw/download-pph2019.R.
+# com data-raw/classificacao/download-pph2019.R.
 
-arquivo_dados <- here("data-raw", "pph2019.csv")
+arquivo_dados <- here("data-raw", "classificacao", "pph2019.csv")
 
 if (!file.exists(arquivo_dados)) {
   stop(
     "Base nao encontrada em ", arquivo_dados,
-    ". Rode primeiro: Rscript data-raw/download-pph2019.R",
+    ". Rode primeiro: Rscript data-raw/classificacao/download-pph2019.R",
     call. = FALSE
   )
 }
@@ -356,7 +363,7 @@ print(
   include.rownames = FALSE
 )
 
-cat("\nSaida gravada em", here("output"), "\n")
+cat("\nSaida gravada em", here("output", "classificacao"), "\n")
 
 if (!interativo) {
   sink()

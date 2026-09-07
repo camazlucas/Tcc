@@ -3,7 +3,7 @@
 # O arquivo tem cerca de 70 MB e por isso fica fora do controle de versao.
 # Rode uma vez antes da primeira analise:
 #
-#   Rscript data-raw/download-pph2019.R
+#   Rscript data-raw/classificacao/download-pph2019.R
 
 library(here)
 
@@ -12,7 +12,7 @@ url_dados <- paste0(
   "PPH%202019%20-%20Banco%20de%20Dados%20V2.csv"
 )
 
-destino <- here("data-raw", "pph2019.csv")
+destino <- here("data-raw", "classificacao", "pph2019.csv")
 
 if (file.exists(destino)) {
   cat("Base ja existe em", destino, "\n")
