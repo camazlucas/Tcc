@@ -1,0 +1,15 @@
+# Um servico so, porque nao ha nada a orquestrar: o projeto nao tem banco,
+# nem API, e os dois subprojetos rodam no mesmo ambiente. O compose esta aqui
+# pelos volumes e pelo diretorio de trabalho, nao pela orquestracao.
+
+services:
+  tcc:
+    build: .
+    image: tcc:0.1.0
+    working_dir: /project
+    # O projeto inteiro e montado: o codigo pode ser editado no host e roda
+    # no container sem rebuild, e output/ e data-raw/ ficam gravados no host.
+    # A biblioteca do renv nao e afetada, pois vive em /opt/renv/library.
+    volumes:
+      - .:/project
+    command: bash

@@ -1,0 +1,24 @@
+# O que nao precisa entrar na imagem.
+# Espelha o .gitignore, mais o que so existe na maquina do desenvolvedor.
+
+.git
+.gitignore
+.Rproj.user
+**/.Rhistory
+.RData
+.Ruserdata
+Rplots*.pdf
+
+# Saidas geradas pelos scripts, regeneraveis dentro do container
+output/
+
+# Base bruta da PPH 2019, ~70 MB, baixada por
+# data-raw/classificacao/download-pph2019.R
+data-raw/classificacao/pph2019.csv
+
+# A biblioteca do renv e reconstruida no build a partir do renv.lock
+renv/library/
+renv/local/
+renv/cellar/
+renv/staging/
+renv/sandbox/
