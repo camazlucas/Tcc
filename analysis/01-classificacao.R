@@ -1,15 +1,88 @@
 # Classificacao do perfil socioeconomico a partir da posse de equipamentos
 #
-# Compara tres classificadores sobre tres bases derivadas da PPH 2019, com
-# as classes agrupadas em 6 estratos do Criterio Brasil ou em 3 faixas.
+# Compara tres classificadores sobre as bases derivadas da PPH 2019.
 #
-# Funciona nos dois modos:
-#   - no RStudio, os graficos abrem em janelas
-#   - via Rscript, os graficos vao para output/figures/ em PNG
+#   Rscript analysis/01-classificacao.R [--base=...] [--classes=...]
 #
-#   Rscript analysis/01-classificacao.R
+#   --base     totais | originais | componentes | todas   (padrao: todas)
+#   --classes  6 | 3 | ambas                              (padrao: ambas)
+#   --uf       sigla da unidade da federacao              (padrao: RJ)
+#   --help     mostra esta ajuda
+#
+# Exemplos:
+#   Rscript analysis/01-classificacao.R --base=componentes --classes=6
+#   Rscript analysis/01-classificacao.R --base=todas --classes=3
+#
+# Funciona nos dois modos: no RStudio os graficos abrem em janelas; via
+# Rscript vao para output/figures/ em PNG. Sem argumentos, roda tudo.
 
 rm(list = ls(all = TRUE))
+
+# Argumentos --------------------------------------------------------------
+
+argumentos <- commandArgs(trailingOnly = TRUE)
+
+ajuda <- function() {
+  cat(
+    "Uso: Rscript analysis/01-classificacao.R [opcoes]\n\n",
+    "  --base=totais|originais|componentes|todas   base a analisar\n",
+    "  --classes=6|3|ambas                         divisao das classes\n",
+    "  --uf=RJ                                     unidade da federacao\n",
+    "  --help                                      mostra esta ajuda\n\n",
+    "Sem argumentos, roda as tres bases com 6 e 3 classes.\n",
+    sep = ""
+  )
+}
+
+if ("--help" %in% argumentos || "-h" %in% argumentos) {
+  ajuda()
+  quit(save = "no")
+}
+
+valor_do_argumento <- function(nome, padrao) {
+  achado <- grep(paste0("^--", nome, "="), argumentos, value = TRUE)
+  if (length(achado) == 0) {
+    return(padrao)
+  }
+  sub(paste0("^--", nome, "="), "", achado[1])
+}
+
+exigir_valor_valido <- function(nome, valor, aceitos) {
+  if (!valor %in% aceitos) {
+    ajuda()
+    stop(
+      "Valor invalido para --", nome, ": '", valor, "'. ",
+      "Aceitos: ", paste(aceitos, collapse = ", "),
+      call. = FALSE
+    )
+  }
+  valor
+}
+
+base_escolhida <- exigir_valor_valido(
+  "base",
+  valor_do_argumento("base", "todas"),
+  c("totais", "originais", "componentes", "todas")
+)
+
+classes_escolhidas <- exigir_valor_valido(
+  "classes",
+  valor_do_argumento("classes", "ambas"),
+  c("6", "3", "ambas")
+)
+
+uf_escolhida <- toupper(valor_do_argumento("uf", "RJ"))
+
+valores_de_k <- if (classes_escolhidas == "ambas") {
+  c(6, 3)
+} else {
+  as.integer(classes_escolhidas)
+}
+
+cat(
+  "Base:", base_escolhida, "| classes:", classes_escolhidas,
+  "| UF:", uf_escolhida, "\n\n"
+)
 
 library(here)
 library(caret)
@@ -30,10 +103,6 @@ pasta_figuras <- here("output", "figures")
 pasta_tabelas <- here("output", "tables")
 dir.create(pasta_figuras, recursive = TRUE, showWarnings = FALSE)
 dir.create(pasta_tabelas, recursive = TRUE, showWarnings = FALSE)
-
-# Graficos numerados na ordem em que aparecem; sobras de execucoes
-# anteriores se misturariam com as novas.
-unlink(list.files(pasta_figuras, pattern = "\\.png$", full.names = TRUE))
 
 # Modo grafico ------------------------------------------------------------
 # As funcoes de R/ chamam x11(). Sem interface grafica, x11() e substituido
@@ -86,7 +155,8 @@ arquivo_dados <- here("data-raw", "pph2019.csv")
 if (!file.exists(arquivo_dados)) {
   stop(
     "Base nao encontrada em ", arquivo_dados,
-    ". Rode primeiro: Rscript data-raw/download-pph2019.R"
+    ". Rode primeiro: Rscript data-raw/download-pph2019.R",
+    call. = FALSE
   )
 }
 
@@ -99,6 +169,53 @@ cat(
   "Apos filtragem:", nrow(dados_filtrados), "linhas x",
   ncol(dados_filtrados), "colunas\n\n"
 )
+
+# Bases disponiveis -------------------------------------------------------
+# Construidas sob demanda: componentes depende de totais, e originais parte
+# da base bruta, sem passar por tratamento_dos_dados().
+
+construir_base <- function(qual) {
+  if (qual == "originais") {
+    return(dados_originais(dados, uf_escolhida))
+  }
+
+  base_uf <- filtrar_estados(uf_escolhida, dados_filtrados)
+
+  if (qual == "totais") {
+    return(base_uf)
+  }
+  reduzir_com_cp(1, 0.13, base_uf)
+}
+
+catalogo <- list(
+  totais = list(
+    nome = paste("Dados Totais", uf_escolhida),
+    prefixo = paste0("totais-", tolower(uf_escolhida))
+  ),
+  originais = list(nome = "Dados Originais da Pesquisa", prefixo = "originais"),
+  componentes = list(
+    nome = "Reduzidos por Componentes Principais",
+    prefixo = "componentes"
+  )
+)
+
+bases_a_rodar <- if (base_escolhida == "todas") {
+  c("totais", "originais", "componentes")
+} else {
+  base_escolhida
+}
+
+# Limpa apenas as figuras das bases que serao regeradas, para nao apagar o
+# resultado de uma execucao anterior com outra base.
+prefixos_a_limpar <- vapply(
+  bases_a_rodar, function(b) catalogo[[b]]$prefixo, character(1)
+)
+for (prefixo in prefixos_a_limpar) {
+  unlink(list.files(
+    pasta_figuras,
+    pattern = paste0("^\\d+-", prefixo, "-.*\\.png$"), full.names = TRUE
+  ))
+}
 
 # Registro das metricas ---------------------------------------------------
 
@@ -155,11 +272,24 @@ analisar_base <- function(nome, prefixo, base) {
     print(t(estatisticas))
   }
 
-  for (k in c(6, 3)) {
+  for (k in valores_de_k) {
+    # A divisao e criada UMA vez e entregue aos tres classificadores, para
+    # que a diferenca entre eles nao venha do sorteio.
+    divisao <- tentar(
+      paste("Divisao treino/teste,", k, "classes"),
+      divisao_dos_dados(base, k)
+    )
+    if (is.null(divisao)) next
+
+    cat(
+      "    treino:", nrow(divisao$treino),
+      "| teste:", nrow(divisao$teste), "\n"
+    )
+
     secao(paste0(prefixo, "-arvore-", k, "classes"))
     arvore <- tentar(
       paste("Arvore de decisao,", k, "classes"),
-      arvore_class(base, k)
+      arvore_class(divisao)
     )
     if (!is.null(arvore)) {
       print(arvore)
@@ -168,18 +298,20 @@ analisar_base <- function(nome, prefixo, base) {
 
     svm_resultado <- tentar(
       paste("Maquina de vetor de suporte,", k, "classes"),
-      svm_class(base, k)
+      svm_class(divisao)
     )
     if (!is.null(svm_resultado)) {
       print(svm_resultado$summary_svm)
       print(svm_resultado$matriz_de_confusao_svm)
-      registrar(nome, "Vetor de Suporte", k, svm_resultado$matriz_de_confusao_svm)
+      registrar(
+        nome, "Vetor de Suporte", k, svm_resultado$matriz_de_confusao_svm
+      )
     }
 
     secao(paste0(prefixo, "-rede-neural-", k, "classes"))
     rede <- tentar(
       paste("Rede neural,", k, "classes"),
-      rn_class(base, k, 12)
+      rn_class(divisao, 12)
     )
     if (!is.null(rede)) {
       # rep = "best" evita que plot.nn abra um dispositivo proprio
@@ -199,14 +331,10 @@ if (!interativo) {
   sink(file.path(pasta_tabelas, "relatorio.txt"), split = TRUE)
 }
 
-dados_RJ <- filtrar_estados("RJ", dados_filtrados)
-analisar_base("Dados Totais RJ", "totais-rj", dados_RJ)
-
-dados_o <- dados_originais(dados, "RJ")
-analisar_base("Dados Originais da Pesquisa", "originais", dados_o)
-
-dados_cp <- reduzir_com_cp(1, 0.13, dados_RJ)
-analisar_base("Reduzidos por Componentes Principais", "componentes", dados_cp)
+for (qual in bases_a_rodar) {
+  base <- construir_base(qual)
+  analisar_base(catalogo[[qual]]$nome, catalogo[[qual]]$prefixo, base)
+}
 
 # Resumo comparativo ------------------------------------------------------
 

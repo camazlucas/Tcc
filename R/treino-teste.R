@@ -15,37 +15,45 @@ normalizar_treino_teste <- function(treino, teste) {
   amplitude[amplitude == 0] <- 1 # colunas constantes ficam zeradas
 
   escalar <- function(dados) {
-    dados[preditoras] <- as.data.frame(
-      scale(dados[preditoras], center = minimos, scale = amplitude)
-    )
+    dados[preditoras] <- as.data.frame(scale(dados[preditoras],
+      center = minimos,
+      scale = amplitude
+    ))
     dados
   }
 
   list(treino = escalar(treino), teste = escalar(teste))
 }
 
-#' Divide a base em treino e teste
+#' Divide a base em treino e teste, estratificando por classe
+#'
+#' A divisao e criada UMA vez por base e por quantidade de classes, e a mesma
+#' lista e entregue aos tres classificadores. Assim a diferenca de acuracia
+#' entre eles e diferenca de modelo, e nao do sorteio.
+#'
+#' A estratificacao usa a propria coluna `CLASSE`, de modo que treino e teste
+#' preservam a proporcao de cada estrato. Isso importa porque a classe A tem
+#' poucos casos, e sem estratificar sua participacao no teste oscila muito.
 #'
 #' @param dados Base a dividir.
 #' @param qtd_de_classes 3 ou 6, conforme o agrupamento de classes sociais.
-#' @param normalizar Se `TRUE`, aplica `normalizar_treino_teste()`.
+#' @param p Fracao destinada ao treino.
 #'
 #' @return Lista com os elementos `treino` e `teste`.
-divisao_dos_dados <- function(dados, qtd_de_classes, normalizar = FALSE) {
+divisao_dos_dados <- function(dados, qtd_de_classes, p = 0.7) {
   dados_com_classe <- divisao_das_classes(dados, qtd_de_classes)
 
   # divisao_das_classes devolve tibble quando ha reamostragem por grupo
   dados_com_classe <- as.data.frame(dados_com_classe)
 
-  particao <- createDataPartition(seq_len(nrow(dados_com_classe)), p = 0.7)
-  treino <- dados_com_classe[particao$Resample1, ]
-  teste <- dados_com_classe[-particao$Resample1, ]
+  particao <- createDataPartition(
+    factor(dados_com_classe$CLASSE),
+    p = p,
+    list = FALSE
+  )
 
-  if (normalizar) {
-    escalados <- normalizar_treino_teste(treino, teste)
-    treino <- escalados$treino
-    teste <- escalados$teste
-  }
-
-  list(treino = treino, teste = teste)
+  list(
+    treino = dados_com_classe[particao, ],
+    teste = dados_com_classe[-particao, ]
+  )
 }

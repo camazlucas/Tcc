@@ -22,7 +22,9 @@ Três bases são comparadas:
 | **Originais** | 16 do Critério Brasil | Teto de referência |
 | **Componentes Principais** | 23 selecionadas por PCA | Redução de dimensionalidade |
 
-Cada base é classificada em **6 estratos** (A, B1, B2, C1, C2, DE) e em **3 faixas** (Alta, Média, Baixa). No caminho de 3 faixas os grupos são reamostrados para o tamanho do menor deles, equilibrando a base. A divisão é 70/30 entre treino e teste.
+Cada base é classificada em **6 estratos** (A, B1, B2, C1, C2, DE) e em **3 faixas** (Alta, Média, Baixa). No caminho de 3 faixas os grupos são reamostrados para o tamanho do menor deles, equilibrando a base.
+
+A divisão é 70/30, **estratificada pela própria `CLASSE`** e criada **uma única vez** por base e por quantidade de classes. Os três classificadores recebem exatamente as mesmas linhas de treino e de teste, de modo que a diferença de acurácia entre eles seja diferença de modelo e não do sorteio. A estratificação importa porque a classe A representa só 3,6% da base do Rio de Janeiro; sem ela, sua participação no conjunto de teste oscila de um sorteio para outro.
 
 > **Nota de interpretação.** A base Originais alcança as maiores acurácias, mas isso não é mérito do modelo: essas variáveis são justamente as entradas da fórmula que *define* a `CLASSE`. Ela serve como limite superior de comparação. O resultado que sustenta o trabalho é a comparação entre Totais RJ e Componentes Principais.
 
@@ -34,7 +36,9 @@ Cada base é classificada em **6 estratos** (A, B1, B2, C1, C2, DE) e em **3 fai
 
 As preditoras são normalizadas por min-max para a rede neural, com mínimos e máximos calculados **apenas no conjunto de treino** e aplicados ao teste, evitando vazamento de informação. Sem essa normalização o algoritmo rprop não converge dentro do `stepmax` na base reduzida por componentes principais.
 
-Um segundo estudo agrupa as **27 unidades da federação** por perfil de consumo elétrico, por ligação completa (distâncias euclidiana e de Minkowski) e por k-médias.
+### Estudo independente: agrupamento das UFs
+
+O repositório abriga também um segundo trabalho, **separado da classificação e com outra base de dados**: o agrupamento das 27 unidades da federação por perfil de consumo elétrico, a partir de `data-raw/dados-intenso-forte.csv`. Usa ligação completa (distâncias euclidiana e de Minkowski) e k-médias. Não compartilha dados nem funções com o pipeline de classificação — só o diretório de saída.
 
 ## Estrutura do projeto
 
@@ -85,11 +89,30 @@ Rscript -e "renv::restore()"
 Rscript data-raw/download-pph2019.R
 ```
 
-**3. Rode as análises:**
+**3. Rode a classificação.** Sem argumentos, roda as três bases com 6 e 3 classes:
 
 ```bash
 Rscript analysis/01-classificacao.R
 ```
+
+Você pode escolher a base e a divisão das classes:
+
+| Opção | Valores | Padrão |
+|---|---|---|
+| `--base` | `totais`, `originais`, `componentes`, `todas` | `todas` |
+| `--classes` | `6`, `3`, `ambas` | `ambas` |
+| `--uf` | sigla da unidade da federação | `RJ` |
+| `--help` | mostra a ajuda | — |
+
+Por exemplo, só a base reduzida por componentes principais, em 6 estratos:
+
+```bash
+Rscript analysis/01-classificacao.R --base=componentes --classes=6
+```
+
+Rodar uma base isolada apaga apenas as figuras daquela base, preservando as das demais.
+
+**4. Rode a clusterização** (estudo independente, com outra base de dados):
 
 ```bash
 Rscript analysis/02-clusterizacao.R
@@ -97,7 +120,7 @@ Rscript analysis/02-clusterizacao.R
 
 Os scripts detectam o ambiente. Via `Rscript` os gráficos vão para `output/figures/` em PNG e a saída do console é gravada em `output/tables/relatorio.txt`. Abertos no RStudio, os gráficos abrem em janelas.
 
-A classificação leva cerca de 4 minutos; a clusterização, cerca de 1 minuto (o `NbClust` com `index = "all"` responde pela maior parte).
+A classificação completa leva cerca de 4 minutos; uma base isolada, menos de 1. A clusterização leva cerca de 1 minuto (o `NbClust` com `index = "all"` responde pela maior parte).
 
 ## Resultados
 
@@ -127,7 +150,7 @@ R, com `caret` para métricas e partição, `rpart`, `e1071` e `neuralnet` para 
 
 ## Limitações conhecidas
 
-- A divisão treino/teste não é estratificada por classe, e cada classificador sorteia a sua própria divisão. Isso torna a comparação entre modelos mais ruidosa do que o necessário.
+- Há um `set.seed(42)` dentro de `divisao_das_classes()`, usado para tornar reprodutível a reamostragem das 3 faixas. Como ele reinicia o gerador de números aleatórios, toda a aleatoriedade seguinte fica presa àquela semente: no caminho de 3 classes, a divisão treino/teste é sempre a mesma entre execuções. No caminho de 6 classes, que não passa por esse trecho, ela varia normalmente.
 - O arquivo `analysis/rascunho-clusterizacao-supervisionada.R` preserva dois blocos exploratórios que **não executam**: um depende de um CSV ausente do repositório, o outro tem erros de indexação documentados no próprio arquivo.
 - A base bruta da PPH 2019 é redistribuída via Hugging Face pelo autor; a fonte original é a Eletrobras/Procel.
 

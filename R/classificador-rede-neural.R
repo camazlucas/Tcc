@@ -1,25 +1,27 @@
 #' Classifica a classe social com rede neural
 #'
-#' As preditoras sao normalizadas porque o rprop nao converge dentro do
-#' `stepmax` quando as variaveis estao em escalas diferentes.
+#' Recebe a mesma divisao dos demais classificadores e normaliza as
+#' preditoras internamente. A normalizacao e necessaria porque o rprop nao
+#' converge dentro do `stepmax` quando as variaveis estao em escalas
+#' diferentes, e fica restrita a esta funcao para nao alterar a arvore nem
+#' a maquina de vetor de suporte, que operam sobre os valores originais.
 #'
-#' @param dados Base com a coluna `CLASSE`.
-#' @param qtd_de_classes 3 ou 6.
+#' @param divisao Lista com `treino` e `teste`, vinda de
+#'   `divisao_dos_dados()`.
 #' @param numero_de_neuronios Neuronios da camada oculta.
 #' @param lr Taxa de aprendizado.
 #' @param threshold Limite de parada do rprop na primeira tentativa.
 #' @param stepmax Maximo de passos por tentativa.
 #'
 #' @return Lista com `modelo_rn`, `matriz_de_confusao_rn` e `metricas_rn`.
-rn_class <- function(dados,
-                     qtd_de_classes,
+rn_class <- function(divisao,
                      numero_de_neuronios = 12,
                      lr = 0.01,
                      threshold = 0.05,
                      stepmax = 5e4) {
-  divisao <- divisao_dos_dados(dados, qtd_de_classes, normalizar = TRUE)
-  treino <- divisao$treino
-  teste <- divisao$teste
+  escalados <- normalizar_treino_teste(divisao$treino, divisao$teste)
+  treino <- escalados$treino
+  teste <- escalados$teste
 
   # Sem convergir, o neuralnet devolve weights = NULL e o compute() seguinte
   # falha com um erro de matriz que nao indica a causa. Por isso a
