@@ -104,7 +104,27 @@ Rscript -e "renv::restore()"
 Rscript data-raw/classificacao/download-pph2019.R
 ```
 
-**3. Rode a classificação.** Sem argumentos, roda as três bases com 6 e 3 classes:
+Feito isso, o ambiente está pronto. A execução em si está na seção seguinte.
+
+## Execução
+
+Cada subprojeto tem um script, e os dois são independentes — rode o que precisar, em qualquer ordem:
+
+| Para obter | Rode | Saída |
+|---|---|---|
+| Resultados da **classificação** | `Rscript analysis/classificacao.R` | `output/classificacao/` |
+| Resultados da **clusterização** | `Rscript analysis/clusterizacao.R` | `output/clusterizacao/` |
+
+Cada execução grava, dentro da pasta do subprojeto:
+
+- `figures/` — os gráficos em PNG, numerados na ordem em que aparecem
+- `tables/relatorio.txt` — toda a saída de console, incluindo as matrizes de confusão
+- `tables/resumo-metricas.csv` e `.tex` — a tabela comparativa, a última pronta para o LaTeX
+- `tables/estatisticas-*.csv` — as descritivas de cada base
+
+### Classificação
+
+Sem argumentos, roda as três bases com 6 e 3 classes:
 
 ```bash
 Rscript analysis/classificacao.R
@@ -127,19 +147,25 @@ Rscript analysis/classificacao.R --base=componentes --classes=6
 
 Rodar uma base isolada apaga apenas as figuras daquela base, preservando as das demais.
 
-**4. Rode a clusterização** (estudo independente, com outra base de dados):
+### Clusterização
+
+Não tem parâmetros — usa a base própria do subprojeto:
 
 ```bash
 Rscript analysis/clusterizacao.R
 ```
 
-Os scripts detectam o ambiente. Via `Rscript` os gráficos vão para `output/<subprojeto>/figures/` em PNG e a saída do console é gravada em `output/<subprojeto>/tables/relatorio.txt`. Abertos no RStudio, os gráficos abrem em janelas.
+### Notas de execução
 
-A classificação completa leva cerca de 4 minutos; uma base isolada, menos de 1. A clusterização leva cerca de 1 minuto (o `NbClust` com `index = "all"` responde pela maior parte).
+Os scripts detectam o ambiente: via `Rscript` os gráficos vão para PNG; abertos no RStudio, abrem em janelas.
+
+A classificação completa leva cerca de 4 minutos, e uma base isolada menos de 1. A clusterização leva cerca de 1 minuto — o `NbClust` com `index = "all"` responde pela maior parte.
 
 ## Resultados
 
-Acurácia no conjunto de teste, divisão em 6 estratos:
+Acurácia no conjunto de teste. Os valores saem de `output/classificacao/tables/resumo-metricas.csv`.
+
+### 6 estratos (A, B1, B2, C1, C2, DE)
 
 | Base | Modelo | Acurácia | Kappa | IC 95% |
 |---|---|---|---|---|
@@ -153,9 +179,23 @@ Acurácia no conjunto de teste, divisão em 6 estratos:
 | Componentes Principais | Rede Neural | 0,436 | 0,283 | 0,381 – 0,491 |
 | Totais RJ | Rede Neural | 0,420 | 0,266 | 0,366 – 0,476 |
 
-Com 3 faixas os valores sobem: a base Originais chega a 0,971 e as demais ficam entre 0,647 e 0,775.
+### 3 faixas (Alta, Média, Baixa)
 
-**Leitura principal:** reduzir de 61 para 23 variáveis por componentes principais **não custa desempenho de forma detectável**. Nas duas bases os intervalos de confiança se sobrepõem amplamente em todos os classificadores — por exemplo, SVM com 6 estratos dá 0,528 (0,472 – 0,583) na base completa contra 0,503 (0,447 – 0,559) na reduzida. Ou seja, 38 variáveis a menos sem diferença estatisticamente distinguível.
+Aqui a base é reamostrada para equilibrar os grupos, caindo de 1.096 para 345 domicílios — daí os intervalos de confiança mais largos.
+
+| Base | Modelo | Acurácia | Kappa | IC 95% |
+|---|---|---|---|---|
+| Originais | SVM | 0,971 | 0,956 | 0,916 – 0,994 |
+| Originais | Rede Neural | 0,931 | 0,897 | 0,864 – 0,972 |
+| Originais | Árvore | 0,863 | 0,794 | 0,780 – 0,923 |
+| Totais RJ | SVM | 0,775 | 0,662 | 0,681 – 0,851 |
+| Totais RJ | Árvore | 0,765 | 0,647 | 0,670 – 0,843 |
+| Componentes Principais | Árvore | 0,755 | 0,632 | 0,660 – 0,835 |
+| Componentes Principais | SVM | 0,755 | 0,632 | 0,660 – 0,835 |
+| Componentes Principais | Rede Neural | 0,706 | 0,559 | 0,608 – 0,792 |
+| Totais RJ | Rede Neural | 0,647 | 0,471 | 0,546 – 0,739 |
+
+**Leitura principal:** reduzir de 61 para 23 variáveis por componentes principais **não custa desempenho de forma detectável**. Os intervalos de confiança da base completa e da reduzida se sobrepõem amplamente em todos os classificadores e nas duas divisões de classe — com 6 estratos, o SVM dá 0,528 (0,472 – 0,583) na completa contra 0,503 (0,447 – 0,559) na reduzida; com 3 faixas, 0,775 (0,681 – 0,851) contra 0,755 (0,660 – 0,835). Ou seja, 38 variáveis a menos sem diferença estatisticamente distinguível.
 
 A posse de equipamentos sozinha sustenta uma separação em 3 faixas com acurácia em torno de 0,77, mas se mostra insuficiente para os 6 estratos do Critério Brasil, onde nenhum modelo passa de 0,53.
 
