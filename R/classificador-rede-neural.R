@@ -1,23 +1,32 @@
-# Ajustando rede neural---------------------------------------------------
-rn_class <- function(dados, qtd_de_classes, numero_de_neuronios = 12, lr = 0.01,
-                     threshold = 0.05, stepmax = 5e4){
+#' Classifica a classe social com rede neural
+#'
+#' As preditoras sao normalizadas porque o rprop nao converge dentro do
+#' `stepmax` quando as variaveis estao em escalas diferentes.
+#'
+#' @param dados Base com a coluna `CLASSE`.
+#' @param qtd_de_classes 3 ou 6.
+#' @param numero_de_neuronios Neuronios da camada oculta.
+#' @param lr Taxa de aprendizado.
+#' @param threshold Limite de parada do rprop na primeira tentativa.
+#' @param stepmax Maximo de passos por tentativa.
+#'
+#' @return Lista com `modelo_rn`, `matriz_de_confusao_rn` e `metricas_rn`.
+rn_class <- function(dados,
+                     qtd_de_classes,
+                     numero_de_neuronios = 12,
+                     lr = 0.01,
+                     threshold = 0.05,
+                     stepmax = 5e4) {
+  divisao <- divisao_dos_dados(dados, qtd_de_classes, normalizar = TRUE)
+  treino <- divisao$treino
+  teste <- divisao$teste
 
-  # Divisao em Treino e Teste, com normalizacao ajustada no treino.
-  # Sem normalizar, o rprop nao converge dentro do stepmax nas bases com
-  # variaveis de escalas diferentes (por exemplo a base reduzida por CP).
-  divisao = divisao_dos_dados(dados, qtd_de_classes, normalizar = TRUE)
-  treino = divisao$treino
-  teste = divisao$teste
-
-  # Treinando a rede neural.
-  # O rprop nem sempre converge dentro do stepmax, e quando isso acontece o
-  # neuralnet devolve weights = NULL, o que faz compute() quebrar depois com
-  # um erro de matriz que nao indica a causa. Por isso a convergencia e
-  # verificada aqui, afrouxando o threshold a cada tentativa.
+  # Sem convergir, o neuralnet devolve weights = NULL e o compute() seguinte
+  # falha com um erro de matriz que nao indica a causa. Por isso a
+  # convergencia e verificada aqui, afrouxando o threshold a cada tentativa.
   classificador_RN <- NULL
 
   for (tentativa_threshold in threshold * c(1, 2, 4)) {
-
     candidato <- neuralnet(
       CLASSE ~ .,
       treino,
@@ -39,34 +48,32 @@ rn_class <- function(dados, qtd_de_classes, numero_de_neuronios = 12, lr = 0.01,
   }
 
   if (is.null(classificador_RN)) {
-    stop("A rede nao convergiu com threshold ate ", threshold * 4,
-         ". Aumente o stepmax ou reduza numero_de_neuronios.")
+    stop(
+      "A rede nao convergiu com threshold ate ", threshold * 4,
+      ". Aumente o stepmax ou reduza numero_de_neuronios."
+    )
   }
 
-  # Previsão
   prev <- compute(
     classificador_RN,
     teste[, !(names(teste) %in% "CLASSE")]
   )$net.result
 
   # Os neuronios de saida seguem a ordem alfabetica das classes do treino.
-  # Nao usar model.list$response aqui: ele lista as classes na ordem de
-  # aparicao no data.frame, que nao e a ordem das colunas de net.result.
+  # Nao usar model.list$response: ele lista as classes na ordem de aparicao
+  # no data frame, que nao corresponde as colunas de net.result.
   labels <- sort(unique(treino$CLASSE))
 
-  # Convertendo índices para rótulos
   predicao <- labels[apply(prev, 1, which.max)]
 
-  # Matriz de confusão
-  matriz_confusao_RN <- table(factor(teste$CLASSE, levels = labels),
-                              factor(predicao,     levels = labels))
+  matriz_confusao_RN <- table(
+    factor(teste$CLASSE, levels = labels),
+    factor(predicao, levels = labels)
+  )
 
-  metricas <- confusionMatrix(matriz_confusao_RN)
-
-  return(list(
+  list(
     modelo_rn = classificador_RN,
     matriz_de_confusao_rn = matriz_confusao_RN,
-    metricas_rn = metricas
-  ))
-
+    metricas_rn = confusionMatrix(matriz_confusao_RN)
+  )
 }

@@ -1,221 +1,232 @@
-# Limpeza de Memoria ------------------------------------------------------
-rm(list=ls(all=TRUE)) # Limpar a memória
+# Classificacao do perfil socioeconomico a partir da posse de equipamentos
+#
+# Compara tres classificadores sobre tres bases derivadas da PPH 2019, com
+# as classes agrupadas em 6 estratos do Criterio Brasil ou em 3 faixas.
+#
+# Funciona nos dois modos:
+#   - no RStudio, os graficos abrem em janelas
+#   - via Rscript, os graficos vao para output/figures/ em PNG
+#
+#   Rscript analysis/01-classificacao.R
 
-# Pacotes Utilizados ------------------------------------------------------
+rm(list = ls(all = TRUE))
 
-#Todos
+library(here)
 library(caret)
 library(dplyr)
 library(factoextra)
 library(xtable)
-
-#Redes Neurais
-
 library(neuralnet)
-
-#Arvore de Classificacao
 library(arules)
 library(caTools)
 library(rpart)
 library(rpart.plot)
-
-#Maquina de Vetor de Suporte
 library(e1071)
 library(ggplot2)
 
-# Funcoes Utilizadas -------------------------------
-
-#Filtragem e Analise dos Dados
-source("Bases de Dados/Tratamento da Base de Dados Totais PPH-2019.r")
-source("Analise dos Dados.r")
-
-#Preparacao das Bases de Dados aplicadas
-source("Bases de Dados/Base de Dados Original.r")
-source("Bases de Dados/Base de Dados por Componentes Principais.r")
-source("Bases de Dados/Base de Dados por Estado.r")
-
-#Classificadores Utilizados
-source("Classificadores/Classificador em Arvore.r")
-source("Classificadores/Classificador Redes Neurais.r")
-source("Classificadores/Classificador Vetor de Suporte.r")
-source("Classificadores/Divisao da Quantidade de Classes Sociais Utilizadas.r")
-source("Classificadores/Treino e Teste.r")
-
-
-# Dados Utilizados -----------------------------------
-
-# Upload dos Dados
-dados = read.csv2("https://huggingface.co/datasets/camazlucas/pph2019/resolve/main/PPH%202019%20-%20Banco%20de%20Dados%20V2.csv")
-dados[is.na(dados)] = 0
-
-#Filtragem dos Dados --------------------------------
-
-dados_filtrados = tratamento_dos_dados(dados)
-
-
-# Classificação com os Dados Totais do RJ -----------------------------------
-
-dados_RJ = filtrar_estados("RJ", dados_filtrados)
-
-  ## Analise Exploratoria dos Dados -----------------------------------------
-
-    graficos_dispersao(dados_RJ)
-
-    boxplot_dispersao(dados_RJ)
-
-    estat_dados(dados_RJ)
-
-    ##Classificacao em Arvores de Decisao -------------------------------------
-      arvore_class_RJ6 = arvore_class(dados_RJ, 6)
-
-      print(arvore_class_RJ6)
-
-      arvore_class_RJ3 = arvore_class(dados_RJ, 3)
-
-      print(arvore_class_RJ3)
-
-    ##Classificacao com Maquinas de Vetor de Suporte --------------------------
-      svm_class_RJ6 = svm_class(dados_RJ, 6)
-
-      print(svm_class_RJ6$summary_svm)
-
-      print(svm_class_RJ6$matriz_de_confusao_svm)
-
-      svm_class_RJ3 = svm_class(dados_RJ, 3)
-
-      print(svm_class_RJ3$summary_svm)
-
-      print(svm_class_RJ3$matriz_de_confusao_svm)
-
-    ##Classificacao com Redes Neurais -----------------------------------------
-
-      rn_class_RJ6 = rn_class(dados_RJ, 6, 12)
-
-      x11();{plot(rn_class_RJ6$modelo_rn, show.weights = FALSE)}
-
-      #print(class_o$matriz_de_confusao_rn)
-
-      print(rn_class_RJ6$metricas_rn)
-
-      rn_class_RJ3 = rn_class(dados_RJ, 3)
-
-      x11();{plot(rn_class_RJ3$modelo_rn, show.weights = FALSE)}
-
-      #print(class_o$matriz_de_confusao_rn)
-
-      print(rn_class_RJ3$metricas_rn)
-      
-#Classificação com os Dados Originais da Pesquisa ----------------------------
-      
-  dados_o = dados_originais(dados, "RJ")
-      
-      ## Analise Exploratoria dos Dados --------------------------------------
-      
-      graficos_dispersao(dados_o)
-      
-      boxplot_dispersao(dados_o)
-      
-      estat_dados(dados_o)
-      
-      
-      ##Classificacao em Arvores de Decisao -------------------------------------
-      arvore_class_o6 = arvore_class(dados_o, 6)
-      
-      print(arvore_class_o6)
-      
-      arvore_class_o3 = arvore_class(dados_o, 3)
-      
-      print(arvore_class_o3)
-      
-      ##Classificacao com Maquinas de Vetor de Suporte --------------------------
-      svm_class_o6 = svm_class(dados_o, 6)
-      
-      print(svm_class_o6$summary_svm)
-      
-      print(svm_class_o6$matriz_de_confusao_svm)
-      
-      svm_class_o3 = svm_class(dados_o, 3)
-      
-      print(svm_class_o3$summary_svm)
-      
-      print(svm_class_o3$matriz_de_confusao_svm)
-      
-      ##Classificacao com Redes Neurais -----------------------------------------
-      
-      rn_class_o6 = rn_class(dados_o, 6, 12)
-      
-      x11();{plot(rn_class_o6$modelo_rn, show.weights = FALSE)}
-      
-      #print(class_o$matriz_de_confusao_rn)
-      
-      print(rn_class_o6$metricas_rn)
-      
-      rn_class_o3 = rn_class(dados_o, 3)
-      
-      x11();{plot(rn_class_o3$modelo_rn, show.weights = FALSE)}
-      
-      #print(class_o$matriz_de_confusao_rn)
-      
-      print(rn_class_o3$metricas_rn)
-
-
-#Classificação com os Dados Reduzidos por Componentes Principais ------------
-
-  dados_cp = reduzir_com_cp(1, 0.13, dados_RJ) 
-
-  ## Analise Exploratoria dos Dados -----------------------------------------
-
-    graficos_dispersao(dados_cp)
-
-    boxplot_dispersao(dados_cp)
-
-    estat_dados(dados_cp)
-
-    ##Classificacao em Arvores de Decisao -------------------------------------
-      arvore_class_cp6 = arvore_class(dados_cp, 6)
-
-      print(arvore_class_cp6)
-
-      arvore_class_cp3 = arvore_class(dados_cp, 3)
-
-      print(arvore_class_cp3)
-
-    ##Classificacao com Maquinas de Vetor de Suporte --------------------------
-      svm_class_cp6 = svm_class(dados_cp, 6)
-
-      print(svm_class_cp6$summary_svm)
-
-      print(svm_class_cp6$matriz_de_confusao_svm)
-
-      svm_class_cp3 = svm_class(dados_cp, 3)
-
-      print(svm_class_cp3$summary_svm)
-
-      print(svm_class_cp3$matriz_de_confusao_svm)
-
-    ##Classificacao com Redes Neurais -----------------------------------------
-
-      rn_class_cp6 = rn_class(dados_cp, 6, 12, 0.001)
-
-      x11();{plot(rn_class_cp6$modelo_rn, show.weights = FALSE)}
-
-      #print(class_o$matriz_de_confusao_rn)
-
-      print(rn_class_cp6$metricas_rn)
-
-      rn_class_cp3 = rn_class(dados_cp, 3)
-
-      x11();{plot(rn_class_cp3$modelo_rn, show.weights = FALSE)}
-
-      #print(class_o$matriz_de_confusao_rn)
-
-      print(rn_class_cp3$metricas_rn)
-
-
-
-      
-    
-
-
-
-
+# Saidas ------------------------------------------------------------------
+
+pasta_figuras <- here("output", "figures")
+pasta_tabelas <- here("output", "tables")
+dir.create(pasta_figuras, recursive = TRUE, showWarnings = FALSE)
+dir.create(pasta_tabelas, recursive = TRUE, showWarnings = FALSE)
+
+# Graficos numerados na ordem em que aparecem; sobras de execucoes
+# anteriores se misturariam com as novas.
+unlink(list.files(pasta_figuras, pattern = "\\.png$", full.names = TRUE))
+
+# Modo grafico ------------------------------------------------------------
+# As funcoes de R/ chamam x11(). Sem interface grafica, x11() e substituido
+# por um dispositivo PNG, de modo que os mesmos scripts servem aos dois modos.
+
+interativo <- interactive() && capabilities("X11") || .Platform$GUI == "Rgui"
+
+.contador_grafico <- 0
+.rotulo_grafico <- "grafico"
+
+if (!interativo) {
+  x11 <- function(...) {
+    if (grDevices::dev.cur() > 1) try(grDevices::dev.off(), silent = TRUE)
+    .contador_grafico <<- .contador_grafico + 1
+    grDevices::png(
+      file.path(
+        pasta_figuras,
+        sprintf("%02d-%s.png", .contador_grafico, .rotulo_grafico)
+      ),
+      width = 1400, height = 900, res = 120
+    )
+  }
+}
+
+secao <- function(rotulo) {
+  .rotulo_grafico <<- rotulo
+}
+
+fechar_grafico <- function() {
+  if (!interativo && grDevices::dev.cur() > 1) {
+    try(grDevices::dev.off(), silent = TRUE)
+  }
+}
+
+# Funcoes do projeto ------------------------------------------------------
+
+for (arquivo in list.files(here("R"), pattern = "\\.R$", full.names = TRUE)) {
+  source(arquivo)
+}
+
+# Dados -------------------------------------------------------------------
+# O CSV tem cerca de 70 MB e fica fora do controle de versao. Baixe uma vez
+# com data-raw/download-pph2019.R.
+
+arquivo_dados <- here("data-raw", "pph2019.csv")
+
+if (!file.exists(arquivo_dados)) {
+  stop(
+    "Base nao encontrada em ", arquivo_dados,
+    ". Rode primeiro: Rscript data-raw/download-pph2019.R"
+  )
+}
+
+dados <- read.csv2(arquivo_dados)
+dados[is.na(dados)] <- 0
+cat("Base bruta:", nrow(dados), "linhas x", ncol(dados), "colunas\n")
+
+dados_filtrados <- tratamento_dos_dados(dados)
+cat(
+  "Apos filtragem:", nrow(dados_filtrados), "linhas x",
+  ncol(dados_filtrados), "colunas\n\n"
+)
+
+# Registro das metricas ---------------------------------------------------
+
+resumo <- data.frame()
+
+registrar <- function(base, modelo, classes, metricas) {
+  resumo <<- rbind(resumo, data.frame(
+    Base = base,
+    Modelo = modelo,
+    Classes = classes,
+    Acuracia = round(unname(metricas$overall["Accuracy"]), 4),
+    Kappa = round(unname(metricas$overall["Kappa"]), 4),
+    IC_inferior = round(unname(metricas$overall["AccuracyLower"]), 4),
+    IC_superior = round(unname(metricas$overall["AccuracyUpper"]), 4)
+  ))
+}
+
+# Isola falhas para que uma base problematica nao derrube a execucao inteira
+tentar <- function(rotulo, expressao) {
+  cat("\n>>>", rotulo, "\n")
+  inicio <- Sys.time()
+  resultado <- try(expressao, silent = FALSE)
+  fechar_grafico()
+  duracao <- as.numeric(difftime(Sys.time(), inicio, units = "secs"))
+
+  if (inherits(resultado, "try-error")) {
+    cat("    FALHOU em", round(duracao), "s\n")
+    return(NULL)
+  }
+
+  cat("    ok em", round(duracao), "s\n")
+  resultado
+}
+
+# Analise de uma base -----------------------------------------------------
+
+analisar_base <- function(nome, prefixo, base) {
+  cat("\n\n==========================================================\n")
+  cat("BASE:", nome, "-", nrow(base), "linhas x", ncol(base), "colunas\n")
+  cat("==========================================================\n")
+
+  secao(paste0(prefixo, "-dispersao"))
+  tentar("Graficos de dispersao", graficos_dispersao(base))
+
+  secao(paste0(prefixo, "-boxplot"))
+  tentar("Boxplot", boxplot_dispersao(base))
+
+  estatisticas <- tentar("Estatisticas descritivas", estat_dados(base))
+  if (!is.null(estatisticas)) {
+    write.csv2(
+      t(estatisticas),
+      file.path(pasta_tabelas, paste0("estatisticas-", prefixo, ".csv"))
+    )
+    print(t(estatisticas))
+  }
+
+  for (k in c(6, 3)) {
+    secao(paste0(prefixo, "-arvore-", k, "classes"))
+    arvore <- tentar(
+      paste("Arvore de decisao,", k, "classes"),
+      arvore_class(base, k)
+    )
+    if (!is.null(arvore)) {
+      print(arvore)
+      registrar(nome, "Arvore de Decisao", k, arvore)
+    }
+
+    svm_resultado <- tentar(
+      paste("Maquina de vetor de suporte,", k, "classes"),
+      svm_class(base, k)
+    )
+    if (!is.null(svm_resultado)) {
+      print(svm_resultado$summary_svm)
+      print(svm_resultado$matriz_de_confusao_svm)
+      registrar(nome, "Vetor de Suporte", k, svm_resultado$matriz_de_confusao_svm)
+    }
+
+    secao(paste0(prefixo, "-rede-neural-", k, "classes"))
+    rede <- tentar(
+      paste("Rede neural,", k, "classes"),
+      rn_class(base, k, 12)
+    )
+    if (!is.null(rede)) {
+      # rep = "best" evita que plot.nn abra um dispositivo proprio
+      x11()
+      plot(rede$modelo_rn, rep = "best", show.weights = FALSE)
+      fechar_grafico()
+      print(rede$matriz_de_confusao_rn)
+      print(rede$metricas_rn)
+      registrar(nome, "Rede Neural", k, rede$metricas_rn)
+    }
+  }
+}
+
+# Execucao ----------------------------------------------------------------
+
+if (!interativo) {
+  sink(file.path(pasta_tabelas, "relatorio.txt"), split = TRUE)
+}
+
+dados_RJ <- filtrar_estados("RJ", dados_filtrados)
+analisar_base("Dados Totais RJ", "totais-rj", dados_RJ)
+
+dados_o <- dados_originais(dados, "RJ")
+analisar_base("Dados Originais da Pesquisa", "originais", dados_o)
+
+dados_cp <- reduzir_com_cp(1, 0.13, dados_RJ)
+analisar_base("Reduzidos por Componentes Principais", "componentes", dados_cp)
+
+# Resumo comparativo ------------------------------------------------------
+
+cat("\n\n==========================================================\n")
+cat("RESUMO COMPARATIVO\n")
+cat("==========================================================\n")
+
+resumo <- resumo[order(resumo$Classes, -resumo$Acuracia), ]
+print(resumo, row.names = FALSE)
+
+write.csv2(
+  resumo,
+  file.path(pasta_tabelas, "resumo-metricas.csv"),
+  row.names = FALSE
+)
+print(
+  xtable(resumo, caption = "Desempenho dos classificadores"),
+  file = file.path(pasta_tabelas, "resumo-metricas.tex"),
+  include.rownames = FALSE
+)
+
+cat("\nSaida gravada em", here("output"), "\n")
+
+if (!interativo) {
+  sink()
+}

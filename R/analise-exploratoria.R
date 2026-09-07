@@ -1,83 +1,83 @@
-# Analise Exploratoria dos Dados --------------------------------------------
-
-# Funcao para grafico de dispersao da base de dados selecionada --------------
-boxplot_dispersao = function(dados){
-  x11();boxplot(dados, col=rainbow(ncol(dados)), 
-                pch=16, ylim=c(-1, 20)); abline(h=c(-1,1), col="red", lty="dashed")
+#' Boxplot da dispersao de todas as variaveis da base
+#'
+#' @param dados Base a inspecionar.
+boxplot_dispersao <- function(dados) {
+  x11()
+  boxplot(dados, col = rainbow(ncol(dados)), pch = 16, ylim = c(-1, 20))
+  abline(h = c(-1, 1), col = "red", lty = "dashed")
 }
 
-# Funcao para calcular todas as estatasticas para uma coluna -------------
+#' Estatisticas descritivas de uma variavel
+#'
+#' @param x Vetor numerico.
+#'
+#' @return Vetor nomeado com media, maximo, mediana e desvio padrao.
 calcular_estatisticas <- function(x) {
-  c(Media = mean(x),
+  c(
+    Media = mean(x),
     Maximo = max(x),
     Mediana = median(x),
-    `Desvio Padrao` = sd(x))
+    `Desvio Padrao` = sd(x)
+  )
 }
 
-#Funcao para a tabela de estatisticas dos dados em latex ------------
+#' Tabela de estatisticas descritivas da base
+#'
+#' @param dados Base a resumir.
+#'
+#' @return Matriz com uma linha por estatistica e uma coluna por variavel.
+estat_dados <- function(dados) {
+  estatisticas <- sapply(dados, calcular_estatisticas)
+  rownames(estatisticas) <- c("Media", "Maximo", "Mediana", "Desvio Padrao")
 
-estat_dados = function(dados){
-estatisticas <- sapply(dados, calcular_estatisticas)
-rownames(estatisticas) <- c("Media", "Maximo", "Mediana", "Desvio Padrao")
-return(estatisticas)
+  estatisticas
 }
 
-# Grafico de Dispersao CP  --------------------------------
+#' Graficos de dispersao nas duas primeiras componentes principais
+#'
+#' Gera uma versao com 6 classes e outra com 3, para comparar a separacao
+#' dos estratos no plano das componentes.
+#'
+#' @param dados Base com a coluna `CLASSE` codificada de 1 a 6.
+graficos_dispersao <- function(dados) {
+  dados_cp <- dados[, !(names(dados) %in% "CLASSE")]
+  comp_princ <- prcomp(dados_cp, scale = TRUE)
 
-graficos_dispersao = function(dados){
-  
-dados_cp = dados[, !(names(dados) %in% "CLASSE")]
-comp_princ = prcomp(dados_cp, scale = TRUE)
-  
-dados_cp6 = dados %>% mutate(CLASSE = case_when(
-    CLASSE == 1 ~ "A",
-    CLASSE == 2 ~ "B1",
-    CLASSE == 3 ~ "B2",
-    CLASSE == 4 ~ "C1",
-    CLASSE == 5 ~ "C2",
-    CLASSE == 6 ~ "DE",
-    TRUE ~ as.character(CLASSE)
-))
+  desenhar <- function(grupo, cores, titulo) {
+    x11()
+    plot(comp_princ$x[, 1], comp_princ$x[, 2],
+      col = cores[grupo],
+      xlab = "Dim 1",
+      ylab = "Dim 2",
+      main = titulo
+    )
+    legend("bottomright",
+      legend = levels(grupo),
+      col = cores,
+      pch = 1,
+      title = "CLASSE"
+    )
+  }
 
-grupo6 <- as.factor(dados_cp6$CLASSE)
+  grupo6 <- as.factor(divisao_das_classes(dados, 6)$CLASSE)
+  desenhar(
+    grupo6,
+    c("red", "blue", "darkgreen", "orange", "purple", "green"),
+    "Grafico de Dispersao com Divisao de 6 Classes"
+  )
 
-cores6 <- c("red", "blue", "darkgreen", "orange", "purple", "green")  # Defina as cores que voc? deseja atribuir a cada valor
-
-x11();{plot(comp_princ$x[, 1], 
-            comp_princ$x[, 2], 
-            col = cores6[grupo6], 
-            xlab = "Dim 1", 
-            ylab = "Dim 2", 
-            main = "Grafico de Dispersao com Divisao de 6 Classes")
-  legend("bottomright", # topright para dados totais e bottomright para os originais
-         legend = levels(grupo6), 
-         col = cores6, 
-         pch = 1, 
-         title = "CLASSE")}
-
-dados_cp3 = dados %>% mutate(CLASSE = case_when(
-  CLASSE == 1 ~ "Alta",
-  CLASSE == 2 ~ "Alta",
-  CLASSE == 3 ~ "Media",
-  CLASSE == 4 ~ "Media",
-  CLASSE == 5 ~ "Media",
-  CLASSE == 6 ~ "Baixa",
-  TRUE ~ as.character(CLASSE)
-))
-
-grupo3 <- as.factor(dados_cp3$CLASSE)
-
-cores3 <- c("red", "blue", "darkgreen")  
-
-x11();{plot(comp_princ$x[, 1], 
-            comp_princ$x[, 2], 
-            col = cores3[grupo3], 
-            xlab = "Dim 1", 
-            ylab = "Dim 2", 
-            main = "Grafico de Dispersao com Divisao de 3 Classes")
-  legend("bottomright", # topright para dados totais e bottomright para os originais
-         legend = levels(grupo3), 
-         col = cores3, 
-         pch = 1, 
-         title = "CLASSE")}
+  # Aqui as classes sao apenas renomeadas, sem a reamostragem que
+  # divisao_das_classes() aplica no caminho de 3 classes, para que o grafico
+  # mostre todos os pontos da base.
+  grupo3 <- as.factor(dplyr::case_when(
+    dados$CLASSE %in% c(1, 2) ~ "Alta",
+    dados$CLASSE %in% c(3, 4, 5) ~ "Media",
+    dados$CLASSE == 6 ~ "Baixa",
+    TRUE ~ as.character(dados$CLASSE)
+  ))
+  desenhar(
+    grupo3,
+    c("red", "blue", "darkgreen"),
+    "Grafico de Dispersao com Divisao de 3 Classes"
+  )
 }

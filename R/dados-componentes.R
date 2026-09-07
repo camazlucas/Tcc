@@ -1,42 +1,32 @@
-# Aplicando Componentes Principais para reducao da dimensão ---------------
-reduzir_com_cp = function(qtd_cp, peso, dados){
-  ind_class = which(names(dados) == "CLASSE")
-  dados_cp = dados[,-ind_class] #removendo a coluna de classes sociais
-  comp_princ = prcomp(dados_cp, scale = TRUE)
-  
-  #Visualizacao dos Resultados
-  #summary(comp_princ)
-  #x11();fviz_eig(comp_princ)
-  #x11();fviz_contrib(comp_princ,choice = "var", axes = 1, top = 27)
-  
-  
-  ## Selecionando as variaveis que sao relevantes para a componente ----------
-  
-  weights <- comp_princ$rotation # Extrair os pesos dos componentes principais
-  nomes_variaveis <- colnames(dados_cp) # Obter os nomes das vari?veis originais
-  pesos_cp <- data.frame(abs(weights[, 1])) # Ordenar os pesos da primeira componente principal
-  #View(pesos_cp)
-  nomes_variaveis <- colnames(dados_cp) # Obter os nomes das vari?veis originais
-  
-  
-  ## Criando Dataframe com as vari?veis significativas dos componente --------
-  
-  # Inicializar uma lista para armazenar as vari?veis selecionadas para cada componente principal
+#' Reduz a dimensao selecionando variaveis por componentes principais
+#'
+#' Calcula os componentes principais das preditoras e mantem as variaveis
+#' cujo peso absoluto na componente supera `peso`.
+#'
+#' @param qtd_cp Quantas componentes considerar.
+#' @param peso Peso absoluto minimo para manter a variavel.
+#' @param dados Base com a coluna `CLASSE`.
+#'
+#' @return Data frame com as variaveis selecionadas mais `CLASSE`.
+reduzir_com_cp <- function(qtd_cp, peso, dados) {
+  ind_class <- which(names(dados) == "CLASSE")
+  dados_cp <- dados[, -ind_class]
+  comp_princ <- prcomp(dados_cp, scale = TRUE)
+
+  pesos <- comp_princ$rotation
+  nomes_variaveis <- colnames(dados_cp)
+
   variaveis_contribuicao <- vector("list", length = qtd_cp)
-  for (i in 1:qtd_cp) { # Loop sobre as componentes principais
-    pesos_componente <- weights[, i] # Ordenar os pesos da componente principal atual
-    variaveis_contribuicao[[i]] <- nomes_variaveis[abs(pesos_componente) > peso] # Identificar as vari?veis que contribuem significativamente para a componente principal atual
+  for (i in seq_len(qtd_cp)) {
+    pesos_componente <- pesos[, i]
+    variaveis_contribuicao[[i]] <-
+      nomes_variaveis[abs(pesos_componente) > peso]
   }
-  
-  variaveis_contribuicao # Exibir as vari?veis selecionadas para cada componente principal
-  nomes_variaveis_componentes <- unlist(variaveis_contribuicao[1:qtd_cp]) # Unir os nomes das vari?veis selecionadas para as componentes principais em um vetor
-  nomes_variaveis_unicos <- unique(nomes_variaveis_componentes) # Remover valores duplicados
-  nomes_variaveis_unicos # Exibir os nomes das vari?veis ?nicas
-  dados_reduzidos = dados[,nomes_variaveis_unicos]
-  CLASSE = dados$CLASSE
-  dados_reduzidos = cbind(dados_reduzidos, CLASSE)
-  
-  return(dados_reduzidos)
+
+  nomes_variaveis_unicos <- unique(unlist(variaveis_contribuicao))
+
+  dados_reduzidos <- dados[, nomes_variaveis_unicos]
+  dados_reduzidos$CLASSE <- dados$CLASSE
+
+  dados_reduzidos
 }
-
-

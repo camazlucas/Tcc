@@ -1,0 +1,8 @@
+linters: linters_with_defaults(
+    object_usage_linter = NULL,
+    object_name_linter = NULL,
+    line_length_linter = line_length_linter(88),
+    pipe_consistency_linter = pipe_consistency_linter(pipe = "%>%")
+  )
+exclusions: list("analysis/rascunho-clusterizacao-supervisionada.R")
+encoding: "UTF-8"

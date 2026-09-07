@@ -1,0 +1,35 @@
+Package: tcc
+Title: Classificacao do Perfil Socioeconomico a Partir da Posse de
+    Equipamentos Eletricos
+Version: 0.1.0
+Authors@R: person("Lucas", "Camaz Ferreira", role = c("aut", "cre"))
+Description: Trabalho de conclusao de curso que compara arvores de decisao,
+    maquinas de vetor de suporte e redes neurais na classificacao da classe
+    social de domicilios a partir da posse de equipamentos eletricos,
+    usando a Pesquisa de Posse e Habitos de Uso de Equipamentos Eletricos
+    (PPH) 2019. Inclui tambem o agrupamento das unidades da federacao por
+    perfil de consumo.
+License: file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.5)
+Imports:
+    arules,
+    caret,
+    caTools,
+    cluster,
+    dplyr,
+    e1071,
+    factoextra,
+    ggplot2,
+    here,
+    MVN,
+    NbClust,
+    neuralnet,
+    rpart,
+    rpart.plot,
+    xtable
+Suggests:
+    lintr,
+    renv,
+    styler

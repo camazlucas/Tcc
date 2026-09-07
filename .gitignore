@@ -1,4 +1,19 @@
+# RStudio / R
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+Rplots*.pdf
+
+# Saidas geradas pelos scripts (regeneraveis)
+output/
+
+# Base bruta da PPH 2019, ~70 MB, baixada por data-raw/download-pph2019.R
+data-raw/pph2019.csv
+
+# renv: a biblioteca local nao vai para o repositorio, apenas o renv.lock
+renv/library/
+renv/local/
+renv/cellar/
+renv/staging/
+renv/sandbox/
