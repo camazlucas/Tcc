@@ -1,2 +1,5 @@
 ^renv$
 ^renv\.lock$
+^Dockerfile$
+^docker-compose\.yml$
+^\.dockerignore$
